@@ -4,6 +4,20 @@
 
 **ali-iotkit** 是 RT-Thread 移植的用于连接阿里云 IoT 平台的软件包。基础 SDK 是阿里提供的 [**iotkit-embedded C-SDK**](https://github.com/aliyun/iotkit-embedded)。
 
+**ali-iotkit** 为了方便设备上云封装了丰富的连接协议，如 MQTT、CoAP、HTTP、TLS，并且对硬件平台进行了抽象，使其不受具体的硬件平台限制而更加灵活。
+
+相对传统的云端接入 SDK，**ali-iotkit** 具有如下优势：
+
+- 快速接入能力
+- 嵌入式设备调优
+- 多编译器支持（Gcc、IAR、MDK）
+- 多连接协议支持（HTTP、MQTT、CoAP）
+- 跨硬件、跨 OS 平台支持
+- 设备固件 OTA 升级
+- TLS/DTLS 安全连接
+- 高可移植的应用端程序
+- 高可复用的功能组件
+
 ### 1.1 目录结构
 
 | 名称            | 说明 |
