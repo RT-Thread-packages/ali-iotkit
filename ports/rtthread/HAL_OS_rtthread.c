@@ -61,6 +61,7 @@ void *HAL_MutexCreate(void)
 void HAL_MutexDestroy(_IN_ void *mutex)
 {
     int err_num;
+    err_num = err_num;
     if (0 != (err_num = rt_mutex_delete((rt_mutex_t)mutex))) {
         perror("destroy mutex failed");
     }
@@ -69,6 +70,7 @@ void HAL_MutexDestroy(_IN_ void *mutex)
 void HAL_MutexLock(_IN_ void *mutex)
 {
     int err_num;
+	  err_num = err_num;
     if (0 != (err_num = rt_mutex_take((rt_mutex_t)mutex, RT_WAITING_FOREVER))) {
         perror("lock mutex failed");
     }
@@ -77,6 +79,7 @@ void HAL_MutexLock(_IN_ void *mutex)
 void HAL_MutexUnlock(_IN_ void *mutex)
 {
     int err_num;
+    err_num = err_num;
     if (0 != (err_num = rt_mutex_release((rt_mutex_t)mutex))) {
         perror("unlock mutex failed");
     }
@@ -114,12 +117,12 @@ void HAL_SleepMs(_IN_ uint32_t ms)
 
 void HAL_Srandom(uint32_t seed)
 {
-    srandom(seed);
+    srand(seed);
 }
 
 uint32_t HAL_Random(uint32_t region)
 {
-    return (region > 0) ? (random() % region) : 0;
+    return (region > 0) ? (rand() % region) : 0;
 }
 
 int HAL_Snprintf(_IN_ char *str, const int len, const char *fmt, ...)
@@ -128,7 +131,7 @@ int HAL_Snprintf(_IN_ char *str, const int len, const char *fmt, ...)
     int     rc;
 
     va_start(args, fmt);
-    rc = vsnprintf(str, len, fmt, args);
+    rc = rt_vsnprintf(str, len, fmt, args);
     va_end(args);
 
     return rc;
@@ -136,7 +139,7 @@ int HAL_Snprintf(_IN_ char *str, const int len, const char *fmt, ...)
 
 int HAL_Vsnprintf(_IN_ char *str, _IN_ const int len, _IN_ const char *format, va_list ap)
 {
-    return vsnprintf(str, len, format, ap);
+    return rt_vsnprintf(str, len, format, ap);
 }
 
 void HAL_Printf(_IN_ const char *fmt, ...)
@@ -144,9 +147,9 @@ void HAL_Printf(_IN_ const char *fmt, ...)
     va_list args;
     
     va_start(args, fmt);
-    vsnprintf(log_buf, HAL_OS_LOG_MAXLEN, fmt, args);
+    rt_vsnprintf(log_buf, HAL_OS_LOG_MAXLEN, fmt, args);
     va_end(args);
-    printf("%s", log_buf);
+    rt_kprintf("%s", log_buf);
 }
 
 int HAL_GetPartnerID(char* pid_str)

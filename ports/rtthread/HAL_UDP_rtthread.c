@@ -21,10 +21,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <sys/select.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
 
@@ -67,7 +67,7 @@ void *HAL_UDP_create(char *host, unsigned short port)
         if (AF_INET == ainfo->ai_family) {
             sa = (struct sockaddr_in *)ainfo->ai_addr;
 
-            strncpy(addr, NETWORK_ADDR_LEN, inet_ntoa(sa->sin_addr));
+            strncpy(addr, inet_ntoa(sa->sin_addr), NETWORK_ADDR_LEN);
 
             fprintf(stderr, "The host IP %s, port is %d\r\n", addr, ntohs(sa->sin_port));
 

@@ -65,6 +65,8 @@ static char g_product_key[PRODUCT_KEY_LEN + 1];
 static char g_device_name[DEVICE_NAME_LEN + 1];
 static char g_device_secret[DEVICE_SECRET_LEN + 1];
 
+static char g_ota_version[64] = "iotx_ver_1.0.0";
+
 /* These are pre-defined topics */
 #define TOPIC_UPDATE            "/"PRODUCT_KEY"/"DEVICE_NAME"/update"
 #define TOPIC_ERROR             "/"PRODUCT_KEY"/"DEVICE_NAME"/update/error"
@@ -82,6 +84,21 @@ static char g_device_secret[DEVICE_SECRET_LEN + 1];
 
 static int      user_argc;
 static uint8_t is_running = 0;
+
+static char* strlwr(char *str)
+ {
+    if(str == NULL)
+        return NULL;
+         
+    char *p = str;
+    while (*p != '\0')
+    {
+        if(*p >= 'A' && *p <= 'Z')
+            *p = (*p) + 0x20;
+        p++;
+    }
+    return str;
+}
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
@@ -209,7 +226,7 @@ static int mqtt_client(void)
     mqtt_params.handle_event.pcontext = NULL;
 
     /* Convert uppercase letters in host to lowercase */
-	rt_kprintf("host: %s\r\n", strlwr((char*)mqtt_params.host));
+	EXAMPLE_TRACE("host: %s", strlwr((char*)mqtt_params.host));
 
     /* Construct a MQTT client with specify parameter */
     pclient = IOT_MQTT_Construct(&mqtt_params);
@@ -225,12 +242,11 @@ static int mqtt_client(void)
         goto do_exit;
     }
 
-    if (0 != IOT_OTA_ReportVersion(h_ota, "iotx_ver_1.0.0")) {
+    if (0 != IOT_OTA_ReportVersion(h_ota, g_ota_version)) {
         rc = -1;
         EXAMPLE_TRACE("report OTA version failed");
         goto do_exit;
     }
-
 
     HAL_SleepMs(1000);
 
@@ -279,27 +295,14 @@ static int mqtt_client(void)
             } else {
                 EXAMPLE_TRACE("The firmware is valid!  Download firmware successfully.");
 
-                /* For test, here report new firmware version. 
-                 * In actual application, please report the new version number after the firmware is successfully updated. 
-                 */
-                if (0 != IOT_OTA_ReportVersion(h_ota, version)) {
-                    rc = -1;
-                    EXAMPLE_TRACE("report OTA version failed");
-                    goto do_exit;
-                }
-
-                EXAMPLE_TRACE("OTA FW version: %s", version);
-
-                /* handle the MQTT packet received from TCP or SSL connection */
-                IOT_MQTT_Yield(pclient, 200);
+                snprintf(g_ota_version, sizeof(g_ota_version), "%s", version);
+                EXAMPLE_TRACE("OTA FW version: %s", g_ota_version);
 
                 goto do_exit;
             }
         }
         HAL_SleepMs(2000);
     } while (is_running);
-
-    HAL_SleepMs(200);
 
 do_exit:
 
@@ -356,7 +359,6 @@ static int ali_ota_main(int argc, char **argv)
                 return 0;
             }
             is_running = 0;
-            // stop ota test
             return 0;
         }
         else
@@ -372,7 +374,7 @@ static int ali_ota_main(int argc, char **argv)
     }
 
 #ifdef IOTX_PRJ_VERSION
-    EXAMPLE_TRACE("iotkit-embedded sdk version: %s", IOTX_PRJ_VERSION);
+    HAL_Printf("iotkit-embedded sdk version: %s\n", IOTX_PRJ_VERSION);
 #endif
 
     /**< set device info*/
