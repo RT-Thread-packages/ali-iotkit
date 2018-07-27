@@ -29,12 +29,12 @@ void IOT_OpenLog(const char *ident)
         mod = "---";
     }
 
-    return LITE_openlog(mod);
+    LITE_openlog(mod);
 }
 
 void IOT_CloseLog(void)
 {
-    return LITE_closelog();
+    LITE_closelog();
 }
 
 void IOT_SetLogLevel(IOT_LogLevel level)
@@ -48,7 +48,7 @@ void IOT_SetLogLevel(IOT_LogLevel level)
         return;
     }
 
-    return LITE_set_loglevel(lvl);
+    LITE_set_loglevel(lvl);
 }
 
 void IOT_DumpMemoryStats(IOT_LogLevel level)
@@ -60,7 +60,7 @@ void IOT_DumpMemoryStats(IOT_LogLevel level)
         log_warning("Invalid input level, using default: %d => %d", level, lvl);
     }
 
-    return LITE_dump_malloc_free_stats(lvl);
+    LITE_dump_malloc_free_stats(lvl);
 }
 
 #if defined(MQTT_COMM_ENABLED)

@@ -303,6 +303,8 @@ mqtt_client|294 :: OTA FW version: v10
 
 ![升级进度](./figures/AliLinkDevelopOTAUpgrading.png)
 
+升级进度 100% 后，再次运行 **`ali_ota_test start`** 命令，将最新的版本号上传到云端，版本号匹配成功后，云端显示升级成功，如下图所示：
+
 ![升级成功](./figures/AliLinkDevelopOTAUpgradSuccess.png)
 
 **退出 OTA 例程**

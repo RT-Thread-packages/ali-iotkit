@@ -96,6 +96,21 @@ static char   *user_param = NULL;
 static void   *pclient;
 
 static uint8_t is_running = 0;
+		
+static char* strlwr(char *str)
+ {
+    if(str == NULL)
+        return NULL;
+         
+    char *p = str;
+    while (*p != '\0')
+    {
+        if(*p >= 'A' && *p <= 'Z')
+            *p = (*p) + 0x20;
+        p++;
+    }
+    return str;
+}
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
@@ -193,7 +208,7 @@ static void _demo_message_arrive(void *pcontext, void *pclient, iotx_mqtt_event_
 }
 
 #ifndef MQTT_ID2_AUTH
-static int mqtt_client(void)
+static void mqtt_client(void)
 {
     int rc = 0;
 
@@ -327,15 +342,13 @@ do_exit:
     is_running = 0;
 
     EXAMPLE_TRACE("out of sample!");
-
-    return rc;
 }
 #endif /* MQTT_ID2_AUTH */
 
 #ifdef MQTT_ID2_AUTH
 #include "tfs.h"
 static char __device_id2[TFS_ID2_LEN + 1];
-static int mqtt_client_secure()
+static void mqtt_client_secure()
 {
     int rc = 0, msg_len, cnt = 0;
     void *pclient;
@@ -488,10 +501,7 @@ do_exit:
     IOT_DumpMemoryStats(IOT_LOG_DEBUG);
     IOT_CloseLog();
 
-    EXAMPLE_TRACE("out of sample!");    
-
-    return rc;
-
+    EXAMPLE_TRACE("out of sample!");
 }
 #endif /* MQTT_ID2_AUTH*/
 
@@ -640,7 +650,7 @@ static int ali_mqtt_main(int argc, char **argv)
     }
 
 #ifdef IOTX_PRJ_VERSION
-    EXAMPLE_TRACE("iotkit-embedded sdk version: %s", IOTX_PRJ_VERSION);
+    HAL_Printf("iotkit-embedded sdk version: %s\n", IOTX_PRJ_VERSION);
 #endif
 
     HAL_SetProductKey(PRODUCT_KEY);
