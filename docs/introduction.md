@@ -15,7 +15,7 @@
 
 ## 软件框架图
 
-iotkit SDK 为了方便设备上云封装了丰富的连接协议，如 MQTT、CoAP、HTTP、TLS，并且对硬件平台进行了抽象，使其不收具体的硬件平台限制而更加灵活。在代码架构方面，iotkit SDK 分为三层，如下图所示：
+iotkit SDK 为了方便设备上云封装了丰富的连接协议，如 MQTT、CoAP、HTTP、TLS，并且对硬件平台进行了抽象，使其不受具体的硬件平台限制而更加灵活。在代码架构方面，iotkit SDK 分为三层，如下图所示：
 
 ![iotkit SDK 软件框架图](./figures/AliyunIoTKitSDKArch_AFDdedfafe3gvdas.png)
 

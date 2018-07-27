@@ -20,7 +20,7 @@
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
 
-#define inline __inline
+//#define inline __inline
 
 typedef struct list_head list_head_t;
 
