@@ -96,7 +96,8 @@ static char   *user_param = NULL;
 static void   *pclient;
 
 static uint8_t is_running = 0;
-		
+
+#if !defined(__GNUC__)
 static char* strlwr(char *str)
  {
     if(str == NULL)
@@ -111,6 +112,7 @@ static char* strlwr(char *str)
     }
     return str;
 }
+#endif
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
