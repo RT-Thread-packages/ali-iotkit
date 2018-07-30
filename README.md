@@ -27,11 +27,29 @@
 | ports            | 移植文件目录 |
 | samples         | 示例文件目录 |
 
-### 1.2 许可证
+### 1.2 资源占用
+
+在统计 iotkit 软件包的资源占用的时候，使用的是 MQTT + TLS 例程，仅统计了软件包本身占用的 RAM 和 ROM 大小，未统计 LibC 及外部依赖的文件所占用的资源大小（如 TLS），以及未统计 sample 例程本身占用的资源大小。
+
+- 测试平台： iMXRT1052
+- 测试 IDE： MDK5
+- 优化级别： o2
+
+资源占用如下所示：
+
+```
+RO(CODE + RO)                   : 32886 bytes（32.11K）
+RW(RW + ZI)                     :  2421 bytes（ 2.36K）
+ROM(CODE + RO + RW)             : 32962 bytes（32.18K）
+测试运行 mqtt+tls 例程动态内存使用: 47502 bytes（45.94K）
+```
+
+
+### 1.3 许可证
 
 `ali-iotkit` 软件包延用阿里 `iotkit-embedded` 软件包许可协议，请见 `iotkit-embedded/LICENSE` 文件。
 
-### 1.3 依赖
+### 1.4 依赖
 
 - [RT_Thread 3.0+](https://github.com/RT-Thread/rt-thread/releases/tag/v3.0.4)
 - [MbedTLS 软件包](https://github.com/RT-Thread-packages/mbedtls)
