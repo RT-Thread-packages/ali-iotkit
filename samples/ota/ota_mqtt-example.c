@@ -85,6 +85,7 @@ static char g_ota_version[64] = "iotx_ver_1.0.0";
 static int      user_argc;
 static uint8_t is_running = 0;
 
+#if !defined(__GNUC__)
 static char* strlwr(char *str)
  {
     if(str == NULL)
@@ -99,6 +100,7 @@ static char* strlwr(char *str)
     }
     return str;
 }
+#endif
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
