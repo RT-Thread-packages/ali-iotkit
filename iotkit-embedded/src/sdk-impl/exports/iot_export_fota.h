@@ -56,7 +56,7 @@ typedef struct {
     int         _destructing;
 } service_ota_t;
 
-extern const void* get_service_ota_class();
+//extern const void* get_service_ota_class();
 
 
 #endif /* FOTA_EXPORT_H */

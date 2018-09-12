@@ -16,7 +16,7 @@ enum {
  * @retval NOT_NULL : The singleton instance of mqtt client.
  * @see None.
  */
-void *mqtt_get_instance();
+void *mqtt_get_instance(void);
 
 
 /**
@@ -27,7 +27,7 @@ void *mqtt_get_instance();
  * @retval None
  * @see None.
  */
-void mqtt_remove_instance();
+void mqtt_remove_instance(void);
 
 
 /**
@@ -68,7 +68,7 @@ int mqtt_init_instance(char *productKey, char *deviceName, char *deviceSecret, i
  * @retval -1: fail
  * @see None.
  */
-int mqtt_deinit_instance();
+int mqtt_deinit_instance(void);
 
 
 /**
