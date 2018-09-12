@@ -85,8 +85,7 @@ static char g_ota_version[64] = "iotx_ver_1.0.0";
 static int      user_argc;
 static uint8_t is_running = 0;
 
-#if !defined(__GNUC__)
-static char* strlwr(char *str)
+static char* rt_strlwr(char *str)
  {
     if(str == NULL)
         return NULL;
@@ -100,7 +99,6 @@ static char* strlwr(char *str)
     }
     return str;
 }
-#endif
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
@@ -228,7 +226,7 @@ static int mqtt_client(void)
     mqtt_params.handle_event.pcontext = NULL;
 
     /* Convert uppercase letters in host to lowercase */
-	EXAMPLE_TRACE("host: %s", strlwr((char*)mqtt_params.host));
+	EXAMPLE_TRACE("host: %s", rt_strlwr((char*)mqtt_params.host));
 
     /* Construct a MQTT client with specify parameter */
     pclient = IOT_MQTT_Construct(&mqtt_params);
