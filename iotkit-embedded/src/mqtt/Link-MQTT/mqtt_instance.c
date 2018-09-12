@@ -78,12 +78,12 @@ static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt m
 }
 
 
-void *mqtt_get_instance()
+void *mqtt_get_instance(void)
 {
     return mqtt_client;
 }
 
-void mqtt_remove_instance()
+void mqtt_remove_instance(void)
 {
     mqtt_client = NULL;
 }

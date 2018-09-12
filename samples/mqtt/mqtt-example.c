@@ -97,8 +97,7 @@ static void   *pclient;
 
 static uint8_t is_running = 0;
 
-#if !defined(__GNUC__)
-static char* strlwr(char *str)
+static char* rt_strlwr(char *str)
  {
     if(str == NULL)
         return NULL;
@@ -112,7 +111,6 @@ static char* strlwr(char *str)
     }
     return str;
 }
-#endif
 
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
@@ -267,7 +265,7 @@ static void mqtt_client(void)
     mqtt_params.handle_event.pcontext = NULL;
 
     /* Convert uppercase letters in host to lowercase */
-	rt_kprintf("host: %s\r\n", strlwr((char*)mqtt_params.host));
+	rt_kprintf("host: %s\r\n", rt_strlwr((char*)mqtt_params.host));
 
     /* Construct a MQTT client with specify parameter */
     pclient = IOT_MQTT_Construct(&mqtt_params);
@@ -570,7 +568,7 @@ static int ali_mqtt_test_pub(void)
         return rc;
     }
 
-    EXAMPLE_TRACE("\n publish message: \n topic: %s\n payload: \%s\n rc = %d", ALINK_PROPERTY_POST_PUB, topic_msg.payload, rc);
+    EXAMPLE_TRACE("\n publish message: \n topic: %s\n payload: %s\n rc = %d", ALINK_PROPERTY_POST_PUB, topic_msg.payload, rc);
 #else
     rc = IOT_MQTT_Publish(pclient, TOPIC_UPDATE, &topic_msg);
     if (rc < 0) {
@@ -632,7 +630,7 @@ static int ali_mqtt_main(int argc, char **argv)
     {
         if (!strcmp("pub", argv[1]))
         {
-            user_param = strdup(argv[2]);
+            user_param = (char*)rt_strdup((const char*)argv[2]);
             HAL_Printf("param:%s\n", user_param);
 
             // publish
@@ -661,7 +659,7 @@ static int ali_mqtt_main(int argc, char **argv)
 
 #ifndef MQTT_ID2_AUTH
     tid = rt_thread_create("ali-mqtt",
-                    (void*)mqtt_client, NULL,
+                    (void (*)(void *))mqtt_client, NULL,
                     6 * 1024, RT_THREAD_PRIORITY_MAX / 2 - 1, 10);
 #else
     tid = rt_thread_create("ali-mqtt",
