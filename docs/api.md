@@ -10,17 +10,17 @@
 ## 必选 API
 
 | 序号  | 函数名 | 说明  |
-|:----  | :---- |:----|
-|  1 | IOT_OpenLog         | 开始打印日志信息(log), 接受一个const char *为入参, 表示模块名字    |
-|  2 | IOT_CloseLog        | 停止打印日志信息(log), 入参为空                                  |
-|  3 | IOT_SetLogLevel     | 设置打印的日志等级, 接受入参从1到5, 数字越大, 打印越详细           |
-|  4 | IOT_DumpMemoryStats | 调试函数, 打印内存的使用统计情况, 入参为1-5, 数字越大, 打印越详细  |
+|:- | :------ |:------|
+| 1 | IOT_OpenLog | 开始打印日志信息(log), 接受一个 `const char *` 为入参, 表示模块名字    |
+| 2 | IOT_CloseLog | 停止打印日志信息(log), 入参为空                                  |
+| 3 | IOT_SetLogLevel | 设置打印的日志等级, 接受入参从1到5, 数字越大, 打印越详细           |
+| 4 | IOT_DumpMemoryStats | 调试函数, 打印内存的使用统计情况, 入参为1-5, 数字越大, 打印越详细  |
 
 
 ## MQTT 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_SetupConnInfo            | MQTT连接前的准备, 基于`DeviceName + DeviceSecret + ProductKey`产生MQTT连接的用户名和密码等 |
 |  2    | IOT_SetupConnInfoSecure      | MQTT连接前的准备, 基于`ID2 + DeviceSecret + ProductKey`产生MQTT连接的用户名和密码等,ID2模式启用|
 |  3    | IOT_MQTT_CheckStateNormal    | MQTT连接后, 调用此函数检查长连接是否正常                                       |
@@ -36,7 +36,7 @@
 ## CoAP 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_CoAP_Init                | CoAP实例的构造函数, 入参为`iotx_coap_config_t`结构体, 返回创建的CoAP会话句柄   |
 |  2    | IOT_CoAP_Deinit              | CoAP实例的摧毁函数, 入参为`IOT_CoAP_Init()`所创建的句柄                        |
 |  3    | IOT_CoAP_DeviceNameAuth      | 基于控制台申请的`DeviceName`, `DeviceSecret`, `ProductKey`做设备认证           |
@@ -48,7 +48,7 @@
 ## HTTP 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_HTTP_Init                | Https实例的构造函数, 创建一个HTTP会话的句柄并返回                                      |
 |  2    | IOT_HTTP_DeInit              | Https实例的摧毁函数, 销毁所有相关的数据结构                                            |
 |  3    | IOT_HTTP_DeviceNameAuth      | 基于控制台申请的`DeviceName`, `DeviceSecret`, `ProductKey`做设备认证                   |
@@ -58,7 +58,7 @@
 ## OTA 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------ |:------|
 |  1    | IOT_OTA_Init                 | OTA实例的构造函数, 创建一个OTA会话的句柄并返回                                         |
 |  2    | IOT_OTA_Deinit               | OTA实例的摧毁函数, 销毁所有相关的数据结构                                              |
 |  3    | IOT_OTA_Ioctl                | OTA实例的输入输出函数, 根据不同的命令字可以设置OTA会话的属性, 或者获取OTA会话的状态    |
@@ -74,7 +74,7 @@
 ## 云端连接 Cloud Connection 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_Cloud_Connection_Init    | 云端连接实例的构造函数, 入参为`iotx_cloud_connection_param_pt`结构体, 返回创建的云端连接会话句柄   |
 |  2    | IOT_Cloud_Connection_Deinit  | 云端连接实例的摧毁函数, 入参为`IOT_Cloud_Connection_Init()`所创建的句柄                        |
 |  3    | IOT_Cloud_Connection_Send_Message      | 发送数据给云端           |
@@ -83,7 +83,7 @@
 ## CMP 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_CMP_Init                 | CMP实例的构造函数, 入参为`iotx_cmp_init_param_pt`结构体，只存在一个CMP实例     |
 |  2    | IOT_CMP_Register             | 通过CMP订阅服务                                                                |
 |  3    | IOT_CMP_Unregister           | 通过CMP取消服务订阅                                                            |
@@ -101,7 +101,7 @@
 ## 设备影子相关(可选功能) API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_Shadow_Construct            | 建立一个设备影子的MQTT连接, 并返回被创建的会话句柄                              |
 |  2    | IOT_Shadow_Destroy              | 摧毁一个设备影子的MQTT连接, 销毁所有相关的数据结构, 释放内存, 断开连接          |
 |  3    | IOT_Shadow_Pull                 | 把服务器端被缓存的JSON数据下拉到本地, 更新本地的数据属性                        |
@@ -117,7 +117,7 @@
 ## 主子设备相关(可选功能) API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | IOT_Gateway_Construct           | 建立一个主设备，建立MQTT连接, 并返回被创建的会话句柄                            |
 |  2    | IOT_Gateway_Destroy             | 摧毁一个主设备的MQTT连接, 销毁所有相关的数据结构, 释放内存, 断开连接            |
 |  3    | IOT_Subdevice_Login             | 子设备上线，通知云端建立子设备session                                           |
@@ -136,7 +136,7 @@
 ## linkkit 功能相关 API
 
 | 序号  | 函数名   | 说明   |
-|:----  | :---- |:----|
+|:-  | :------- |:------|
 |  1    | linkkit_start                   | 启动 linkkit 服务，与云端建立连接并安装回调函数                                 |
 |  2    | linkkit_end                     | 停止 linkkit 服务，与云端断开连接并回收资源                                     |
 |  3    | linkkit_dispatch                | 事件分发函数,触发 linkkit_start 安装的回调                                      |
