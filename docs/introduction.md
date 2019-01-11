@@ -39,7 +39,7 @@ iotkit SDK 为了方便设备上云封装了丰富的连接协议，如 MQTT、C
 
 **iotkit-embedded** 软件包是阿里物联网平台 C-SDK 源码，包含连接阿里云所必须的软件包。
 
-```shell
+```c
 ali-iotkit
 |   README.md                       // 软件包使用说明
 |   SConscript                      // RT-Thread 默认的构建脚本
@@ -68,7 +68,7 @@ iotkit-embedded 软件包是阿里物联网平台 C-SDK 源码，未经修改，
 
 iotkit-embedded 软件包目录结构如下所示：
 
-```shell
+```c
 +-- LICENSE           : 软件许可证, Apache-2.0 版本软件许可证
 +-- make.settings     : 功能裁剪配置, 如 MQTT|CoAP, 或裁剪如 OTA|Shadow
 +-- README.md         : 快速开始导引

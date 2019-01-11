@@ -9,7 +9,7 @@
 
 ## 必选 API
 
-| 序号  | 函数名 | 说明  |
+|**序号**  |**函数名** |**说明**  |
 |:- | :------ |:------|
 | 1 | IOT_OpenLog | 开始打印日志信息(log), 接受一个 `const char *` 为入参, 表示模块名字    |
 | 2 | IOT_CloseLog | 停止打印日志信息(log), 入参为空                                  |
@@ -19,7 +19,7 @@
 
 ## MQTT 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_SetupConnInfo            | MQTT连接前的准备, 基于`DeviceName + DeviceSecret + ProductKey`产生MQTT连接的用户名和密码等 |
 |  2    | IOT_SetupConnInfoSecure      | MQTT连接前的准备, 基于`ID2 + DeviceSecret + ProductKey`产生MQTT连接的用户名和密码等,ID2模式启用|
@@ -35,7 +35,7 @@
 
 ## CoAP 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_CoAP_Init                | CoAP实例的构造函数, 入参为`iotx_coap_config_t`结构体, 返回创建的CoAP会话句柄   |
 |  2    | IOT_CoAP_Deinit              | CoAP实例的摧毁函数, 入参为`IOT_CoAP_Init()`所创建的句柄                        |
@@ -47,7 +47,7 @@
 
 ## HTTP 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_HTTP_Init                | Https实例的构造函数, 创建一个HTTP会话的句柄并返回                                      |
 |  2    | IOT_HTTP_DeInit              | Https实例的摧毁函数, 销毁所有相关的数据结构                                            |
@@ -57,7 +57,7 @@
 
 ## OTA 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------ |:------|
 |  1    | IOT_OTA_Init                 | OTA实例的构造函数, 创建一个OTA会话的句柄并返回                                         |
 |  2    | IOT_OTA_Deinit               | OTA实例的摧毁函数, 销毁所有相关的数据结构                                              |
@@ -73,7 +73,7 @@
 
 ## 云端连接 Cloud Connection 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_Cloud_Connection_Init    | 云端连接实例的构造函数, 入参为`iotx_cloud_connection_param_pt`结构体, 返回创建的云端连接会话句柄   |
 |  2    | IOT_Cloud_Connection_Deinit  | 云端连接实例的摧毁函数, 入参为`IOT_Cloud_Connection_Init()`所创建的句柄                        |
@@ -82,7 +82,7 @@
 
 ## CMP 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_CMP_Init                 | CMP实例的构造函数, 入参为`iotx_cmp_init_param_pt`结构体，只存在一个CMP实例     |
 |  2    | IOT_CMP_Register             | 通过CMP订阅服务                                                                |
@@ -100,7 +100,7 @@
 
 ## 设备影子相关(可选功能) API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_Shadow_Construct            | 建立一个设备影子的MQTT连接, 并返回被创建的会话句柄                              |
 |  2    | IOT_Shadow_Destroy              | 摧毁一个设备影子的MQTT连接, 销毁所有相关的数据结构, 释放内存, 断开连接          |
@@ -116,7 +116,7 @@
 
 ## 主子设备相关(可选功能) API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | IOT_Gateway_Construct           | 建立一个主设备，建立MQTT连接, 并返回被创建的会话句柄                            |
 |  2    | IOT_Gateway_Destroy             | 摧毁一个主设备的MQTT连接, 销毁所有相关的数据结构, 释放内存, 断开连接            |
@@ -135,7 +135,7 @@
 
 ## linkkit 功能相关 API
 
-| 序号  | 函数名   | 说明   |
+|**序号**  |**函数名**   |**说明**   |
 |:-  | :------- |:------|
 |  1    | linkkit_start                   | 启动 linkkit 服务，与云端建立连接并安装回调函数                                 |
 |  2    | linkkit_end                     | 停止 linkkit 服务，与云端断开连接并回收资源                                     |

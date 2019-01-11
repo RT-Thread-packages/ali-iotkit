@@ -58,7 +58,7 @@
 
 示例代码如下：
 
-```{.c}
+```c
 while(1)
 {
     IOT_MQTT_Yield(pclient, 200); 
@@ -72,7 +72,7 @@ while(1)
 
 代码如下：
 
-```{.c}
+```c
 /* Subscribe the specific topic */
 rc = IOT_MQTT_Subscribe(pclient, TOPIC_DATA, IOTX_MQTT_QOS1, 
                         _demo_message_arrive, NULL);
@@ -90,7 +90,7 @@ if (rc < 0) {
 
 代码如下：
 
-```{.c}
+```c
 /* Initialize topic information */
 memset(&topic_msg, 0x0, sizeof(iotx_mqtt_topic_info_t));
 strcpy(msg_pub, "message: hello! start!");
@@ -115,7 +115,7 @@ EXAMPLE_TRACE("rc = IOT_MQTT_Publish() = %d", rc);
 
 代码如下：
 
-```{.c}
+```c
 /* handle the MQTT packet received from TCP or SSL connection */
 IOT_MQTT_Yield(pclient, 200);
 ```
@@ -126,7 +126,7 @@ IOT_MQTT_Yield(pclient, 200);
 
 代码如下：
 
-```{.c}
+```c
 IOT_MQTT_Destroy(&pclient);
 ```
 
@@ -146,7 +146,7 @@ IOT_MQTT_Destroy(&pclient);
 
 示例代码：
 
-```{.c}
+```c
 iotx_mqtt_param_t mqtt_params;
 
 memset(&mqtt_params, 0x0, sizeof(mqtt_params));
@@ -184,7 +184,7 @@ CoAP 协议适用在资源受限的低功耗设备上，尤其是 NB-IoT 的设�
 
 示例代码：
 
-```{.c}
+```c
 iotx_coap_context_t *p_ctx = NULL;
 p_ctx = IOT_CoAP_Init(&config);
 if (NULL != p_ctx) {
@@ -208,7 +208,7 @@ SDK 使用接口 IOT_CoAP_SendMessage 发送数据，使用 IOT_CoAP_GetMessageP
 
 示例代码：
 
-```{.c}
+```c
 /* send data */
 static void iotx_post_data_to_server(void *param)
 {
@@ -289,7 +289,7 @@ static void iotx_response_handler(void *arg, void *p_response)
 
 OTA 模块的初始化依赖于 MQTT 连接，即先获得的 MQTT 客户端句柄 pclient。
 
-```{.c}
+```c
 h_ota = IOT_OTA_Init(PRODUCT_KEY, DEVICE_NAME, pclient);
 if (NULL == h_ota) {
     rc = -1;
@@ -303,7 +303,7 @@ if (NULL == h_ota) {
 
 示例代码如下:
 
-```{.c}
+```c
 if (0 != IOT_OTA_ReportVersion(h_ota, "version2.0")) {
     rc = -1;
     printf("report OTA version failed\n");
@@ -320,7 +320,7 @@ MQTT 通道获取到 OTA 固件下载的 URL 后，使用 HTTPS 下载固件，�
 
 示例代码：
 
-```{.c}
+```c
 // 判断是否有固件可下载
 if (IOT_OTA_IsFetching(h_ota)) {
     unsigned char buf_ota[OTA_BUF_LEN];
@@ -339,7 +339,7 @@ if (IOT_OTA_IsFetching(h_ota)) {
 
 使用 IOT_OTA_ReportProgress 接口上报固件下载进度。
 
-```{.c}
+```c
 if (percent - last_percent > 0) {
     IOT_OTA_ReportProgress(h_ota, percent, NULL);
 }
@@ -350,7 +350,7 @@ IOT_MQTT_Yield(pclient, 100);
 
 固件下载完成后，使用 IOT_OTA_Ioctl 接口校验固件的完整性。
 
-```{.c}
+```c
 int32_t firmware_valid;
 IOT_OTA_Ioctl(h_ota, IOT_OTAG_CHECK_FIRMWARE, &firmware_valid, 4);
 if (0 == firmware_valid) {
@@ -364,7 +364,7 @@ if (0 == firmware_valid) {
 
 使用 IOT_OTA_Deinit 销毁 OTA 连接并释放内存。
 
-## 参考
+## 参考资料
 
 - 以上内容引自阿里云物联网平台使用文档，详细内容请访问[阿里云物联网平台文档中心](https://help.aliyun.com/document_detail/30522.html?spm=a2c4g.11186623.6.539.8UAzmn)进行查阅
 - 更多的 API 使用说明请参考 API 使用文档

@@ -60,7 +60,7 @@ ROM(CODE + RO + RW)             : 32962 bytes（32.18K）
 
 - 使用 `menuconfig` 使能 iotkit 软件包并填写设备信息
 
-```shell
+```c
 RT-Thread online packages  --->
     IoT - internet of things  --->
         IoT Cloud  --->
@@ -81,7 +81,7 @@ RT-Thread online packages  --->
 
 - 增加 `mbedTLS` 帧大小（OTA 的时候**至少需要 8K 大小**）
 
-```shell
+```c
 RT-Thread online packages  --->
     security packages  --->
       -*- mbedtls:An open source, portable, easy to use, readable and flexible SSL library  --->
@@ -98,7 +98,7 @@ RT-Thread online packages  --->
 
 该示例程序演示了如何使用 MQTT 发布、订阅 Topic，MSH 命令如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test
 ali_mqtt_test|502 :: iotkit-embedded sdk version: V2.10
 [inf] iotx_device_info_init(40): device_info created successfully!
@@ -114,7 +114,7 @@ mqtt_client|324 :: out of sample!
 
 该示例程序演示了如何使用 MQTT 发布、订阅 Topic，并一直监听订阅 Topic 的消息，MSH 命令如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test loop
 ali_mqtt_test|502 :: iotkit-embedded sdk version: V2.10
 [dbg] iotx_device_info_init(32): device_info already created, return!
@@ -133,7 +133,7 @@ event_handle|111 :: subscribe success, packet-id=0
 
 该示例程序演示了如何使用阿里云 OTA 服务，使用 `ali_ota_test` 命令启动例程，这个时候，设备首先会上报当前版本号到阿里云，然后等待云端下发 OTA 升级命令。
 
-```shell
+```c
 msh />ali_ota_test
 ali_ota_main|325 :: iotkit-embedded sdk version: V2.10
 [dbg] iotx_device_info_init(32): device_info already created, return!
