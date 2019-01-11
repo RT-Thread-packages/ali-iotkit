@@ -48,48 +48,44 @@ LinkDevelop 平台以 RGB_LED 为例，介绍设备与云端如何进行双向�
 
 - **获取软件包**
 
-    打开 RT-Thread 提供的 ENV 工具，使用 **menuconfig** 配置软件包。
+打开 RT-Thread 提供的 Env 工具，使用 **menuconfig** 配置软件包。
+
+* **配置 iotkit 软件包**
+
+配置使能 iotkit 软件包并**填写设备激活凭证**。 `menuconfig` 中选择阿里云平台为 **LinkDevelop**，`OTA channel` 选择 **MQTT**（以 MQTT 为例），详细的配置如下所示：
+
+```c
+RT-Thread online packages  --->
+    IoT - internet of things  --->
+        IoT Cloud  --->
+          [*] Ali-iotkit:  Ali Cloud SDK for IoT platform  --->
+                Select Aliyun platform (LinkDevelop Platform)  --->
+          (a1dSQSGZ77X) Config Product Key
+          (RGB-LED-DEV-1) Config Device Name
+          (Ghuiyd9nmGowdZzjPqFtxhm3WUHEbIlI) Config Device Secret
+          -*-   Enable MQTT
+          [*]     Enable MQTT sample
+          [*]     Enable MQTT direct connect
+          [*]     Enable SSL
+          [ ]   Enable COAP
+          [*]   Enable OTA
+                      Select OTA channel (Use MQTT OTA channel)  --->
+                    version (latest)  --->
+```
   
-    - 配置 iotkit 软件包
-  
-      配置使能 iotkit 软件包并**填写设备激活凭证**。
+* **增加 `mbedTLS` 帧大小**
 
-      `menuconfig` 中选择阿里云平台为 **LinkDevelop**，`OTA channel` 选择 **MQTT**（以 MQTT 为例），详细的配置如下所示：
+阿里 TLS 认证过程中数据包较大，这里需要增加 TLS 帧大小，OTA 的时候**至少需要 8K** 大小。 打开 RT-Thread 提供的 Env 工具，使用 **menuconfig** 配置 **TLS** 帧大小。
 
-    ```shell
-    RT-Thread online packages  --->
-        IoT - internet of things  --->
-            IoT Cloud  --->
-              [*] Ali-iotkit:  Ali Cloud SDK for IoT platform  --->
-                    Select Aliyun platform (LinkDevelop Platform)  --->
-              (a1dSQSGZ77X) Config Product Key
-              (RGB-LED-DEV-1) Config Device Name
-              (Ghuiyd9nmGowdZzjPqFtxhm3WUHEbIlI) Config Device Secret
-              -*-   Enable MQTT
-              [*]     Enable MQTT sample
-              [*]     Enable MQTT direct connect
-              [*]     Enable SSL
-              [ ]   Enable COAP
-              [*]   Enable OTA
-                          Select OTA channel (Use MQTT OTA channel)  --->
-                        version (latest)  --->
-    ```
-  
-    - 增加 `mbedTLS` 帧大小
+```c
+RT-Thread online packages  --->
+    security packages  --->
+      -*- mbedtls:An open source, portable, easy to use, 
+                  readable and flexible SSL library  --->
+      (8192) Maxium fragment length in bytes
+```
 
-      阿里 TLS 认证过程中数据包较大，这里需要增加 TLS 帧大小，OTA 的时候**至少需要 8K** 大小。
-
-      打开 RT-Thread 提供的 ENV 工具，使用 **menuconfig** 配置 **TLS** 帧大小。
-
-    ```shell
-    RT-Thread online packages  --->
-        security packages  --->
-          -*- mbedtls:An open source, portable, easy to use, 
-                      readable and flexible SSL library  --->
-          (8192) Maxium fragment length in bytes
-    ```
-
-    - 使用 `pkgs --update` 命令下载软件包
+配置好后使用 `pkgs --update` 命令下载软件包。
 
 ### MQTT 示例
 
@@ -97,7 +93,7 @@ LinkDevelop 平台以 RGB_LED 为例，介绍设备与云端如何进行双向�
 
 **示例文件**
 
-| 示例程序路径                   | 验证平台      | 说明 |
+| **示例程序路径**                   | **验证平台**      | **说明** |
 | ----                          | ---          | ---- |
 | samples/mqtt/mqtt-example.c   | LinkDevelop, LinkPlatform | 基于 MQTT 通道的设备和云双向通信例程 |
 
@@ -105,7 +101,7 @@ LinkDevelop 平台以 RGB_LED 为例，介绍设备与云端如何进行双向�
 
 例程中，使用 MSH 命令启动 MQTT 例程，命令如下所示：
 
-|命令|说明|
+|**命令**|**说明**|
 |----|----|
 | ali_mqtt_test start     | 启动 MQTT 示例 |
 | ali_mqtt_test pub open  | 开灯，并向云端同步开灯状态 |
@@ -118,7 +114,7 @@ LinkDevelop 平台以 RGB_LED 为例，介绍设备与云端如何进行双向�
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test start
 ali_mqtt_main|645 :: iotkit-embedded sdk version: V2.10
 [inf] iotx_device_info_init(40): device_info created successfully!
@@ -148,7 +144,7 @@ event_handle|124 :: subscribe success, packet-id=0
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test pub open
 ···
 [dbg] iotx_mc_cycle(1277): PUBLISH
@@ -191,7 +187,7 @@ _demo_message_arrive|192 :: ----
 
 使用调试控制台发送命令后，设备可以接受到命令，log 如下所示：
 
-```shell
+```c
 [dbg] iotx_mc_handle_recv_PUBLISH(1091):         Packet Ident : 00000000
 [dbg] iotx_mc_handle_recv_PUBLISH(1092):         Topic Length : 52
 [dbg] iotx_mc_handle_recv_PUBLISH(1096):           Topic Name : /sys/a1Ayv8xhoIl/RGB-DEV1/thing/service/property/set
@@ -231,7 +227,7 @@ mqtt_client|329 :: out of sample!
 
 **示例文件**
 
-| 示例程序路径                                    | 验证平台      | 说明 |
+| **示例程序路径**                                    | **验证平台**      | **说明** |
 | ----                                           | ---          | ---- |
 | samples/ota/ota_mqtt-example.c     | LinkDevelop, LinkPlatform  | 基于 MQTT 通道的设备 OTA 例程 |
 
@@ -239,7 +235,7 @@ mqtt_client|329 :: out of sample!
 
 例程中，使用 MSH 命令启动 OTA 例程，命令如下所示：
 
-|命令|说明|
+|**命令**|**说明**|
 |----|----|
 | ali_ota_test start | 启动 OTA 示例 |
 | ali_ota_test stop  | 手动退出 OTA 示例 |
@@ -250,7 +246,7 @@ mqtt_client|329 :: out of sample!
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_ota_test start
 ali_ota_main|372 :: iotkit-embedded sdk version: V2.10
 [inf] iotx_device_info_init(40): device_info created successfully!
@@ -288,7 +284,7 @@ mqtt_client|241 :: wait ota upgrade command....
 
 推送成功后，设备开始下载固件，下载完成后自动进行固件完整性校验，设备端测试日志如下所示：
 
-```shell
+```c
 ···
 mqtt_client|254 :: Here write OTA data to file....
 [dbg] IOT_OTA_Ioctl(457): 
@@ -311,7 +307,7 @@ mqtt_client|294 :: OTA FW version: v10
 
 升级成功或者升级失败会自动退出 OTA 例程，如果需要手动退出 OTA 例程，请使用 **`ali_ota_test stop`** 命令。
 
-```shell
+```c
 msh />ali_ota_test stop
 msh />[dbg] iotx_mc_disconnect(2121): rc = MQTTDisconnect() = 0
 [inf] _network_ssl_disconnect(514): ssl_disconnect
@@ -365,49 +361,44 @@ mqtt_client|340 :: out of sample!
 
 * **获取软件包**
 
-    打开 RT-Thread 提供的 ENV 工具，使用 **menuconfig** 配置软件包。
+打开 RT-Thread 提供的 Env 工具，使用 **menuconfig** 配置软件包。
   
-    + 配置 iotkit 软件包
++ 配置 iotkit 软件包
   
-      配置使能 iotkit 软件包并**填写设备激活凭证**。
+配置使能 iotkit 软件包并**填写设备激活凭证**。`menuconfig` 中选择阿里云平台为 **LinkPlatform**，`OTA channel` 选择 **MQTT**（以 MQTT 为例），详细的配置如下所示：
 
-      `menuconfig` 中选择阿里云平台为 **LinkPlatform**，`OTA channel` 选择 **MQTT**（以 MQTT 为例），详细的配置如下所示：
-
-    ```shell
-    RT-Thread online packages  --->
-        IoT - internet of things  --->
-            IoT Cloud  --->
-              [*] Ali-iotkit:  Ali Cloud SDK for IoT platform  --->
-                    Select Aliyun platform (LinkPlatform Platform)  --->
-              (a1dSQSGZ77X) Config Product Key
-              (RGB-LED-DEV-1) Config Device Name
-              (Ghuiyd9nmGowdZzjPqFtxhm3WUHEbIlI) Config Device Secret
-              -*-   Enable MQTT
-              [*]     Enable MQTT sample
-              [*]     Enable MQTT direct connect
-              [*]     Enable SSL
-              [ ]   Enable COAP
-              [*]   Enable OTA
-                          Select OTA channel (Use MQTT OTA channel)  --->
-                        version (latest)  --->
-    ```
+```c
+RT-Thread online packages  --->
+    IoT - internet of things  --->
+        IoT Cloud  --->
+          [*] Ali-iotkit:  Ali Cloud SDK for IoT platform  --->
+                Select Aliyun platform (LinkPlatform Platform)  --->
+          (a1dSQSGZ77X) Config Product Key
+          (RGB-LED-DEV-1) Config Device Name
+          (Ghuiyd9nmGowdZzjPqFtxhm3WUHEbIlI) Config Device Secret
+          -*-   Enable MQTT
+          [*]     Enable MQTT sample
+          [*]     Enable MQTT direct connect
+          [*]     Enable SSL
+          [ ]   Enable COAP
+          [*]   Enable OTA
+                      Select OTA channel (Use MQTT OTA channel)  --->
+                    version (latest)  --->
+```
   
-    + 增加 `mbedTLS` 帧大小
++ 增加 `mbedTLS` 帧大小
 
-      阿里 TLS 认证过程中数据包较大，这里需要增加 TLS 帧大小，OTA 的时候**至少需要 8K** 大小。
+阿里 TLS 认证过程中数据包较大，这里需要增加 TLS 帧大小，OTA 的时候**至少需要 8K** 大小。打开 RT-Thread 提供的 Env 工具，使用 **menuconfig** 配置 **TLS** 帧大小。
 
-      打开 RT-Thread 提供的 ENV 工具，使用 **menuconfig** 配置 **TLS** 帧大小。
+```c
+RT-Thread online packages  --->
+    security packages  --->
+      -*- mbedtls:An open source, portable, easy to use, 
+                  readable and flexible SSL library  --->
+      (8192) Maxium fragment length in bytes
+```
 
-    ```{.c}
-    RT-Thread online packages  --->
-        security packages  --->
-          -*- mbedtls:An open source, portable, easy to use, 
-                      readable and flexible SSL library  --->
-          (8192) Maxium fragment length in bytes
-    ```
-
-    + 使用 `pkgs --update` 命令下载软件包
-
++ 使用 `pkgs --update` 命令下载软件包
 
 ### MQTT 示例
 
@@ -415,7 +406,7 @@ mqtt_client|340 :: out of sample!
 
 **示例文件**
 
-| 示例程序路径                   | 验证平台      | 说明 |
+|**示例程序路径**                   |**验证平台**      |**说明** |
 | ----                          | ---          | ---- |
 | samples/mqtt/mqtt-example.c   | LinkDevelop, LinkPlatform | 基于 MQTT 通道的设备和云双向通信例程 |
 
@@ -436,7 +427,7 @@ mqtt_client|340 :: out of sample!
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test start
 ali_mqtt_main|645 :: iotkit-embedded sdk version: V2.10
 [inf] iotx_device_info_init(40): device_info created successfully!
@@ -463,7 +454,7 @@ event_handle|124 :: subscribe success, packet-id=0
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_mqtt_test pub open
 ali_mqtt_test_pub|583 ::
  publish message:
@@ -502,7 +493,7 @@ _demo_message_arrive|192 :: ----
 
 使用调试控制台发送命令后，设备可以接受到命令，log 如下所示：
 
-```shell
+```c
 msh />[dbg] iotx_mc_cycle(1277): PUBLISH
 [dbg] iotx_mc_handle_recv_PUBLISH(1091):         Packet Ident : 00000000
 [dbg] iotx_mc_handle_recv_PUBLISH(1092):         Topic Length : 31
@@ -540,7 +531,7 @@ mqtt_client|329 :: out of sample!
 
 **示例文件**
 
-| 示例程序路径                                    | 验证平台      | 说明 |
+|**示例程序路径**                                    |**验证平台**      |**说明** |
 | ----                                           | ---          | ---- |
 | samples/ota/ota_mqtt-example.c     | LinkDevelop, LinkPlatform  | 基于 MQTT 通道的设备 OTA 例程 |
 
@@ -548,7 +539,7 @@ mqtt_client|329 :: out of sample!
 
 例程中，使用 MSH 命令启动 OTA 例程，命令如下所示：
 
-|命令|说明|
+|**命令**|**说明**|
 |----|----|
 | ali_ota_test start | 启动 OTA 示例 |
 | ali_ota_test stop  | 手动退出 OTA 示例 |
@@ -559,7 +550,7 @@ mqtt_client|329 :: out of sample!
 
 设备 log 如下所示：
 
-```shell
+```c
 msh />ali_ota_test start
 ali_ota_main|372 :: iotkit-embedded sdk version: V2.10
 [inf] iotx_device_info_init(40): device_info created successfully!
@@ -594,7 +585,7 @@ mqtt_client|241 :: wait ota upgrade command....
 
 推送成功后，设备开始下载固件，下载完成后自动进行固件完整性校验，设备端测试日志如下所示：
 
-```shell
+```c
 ···
 mqtt_client|254 :: Here write OTA data to file....
 [dbg] IOT_OTA_Ioctl(457): 
@@ -615,7 +606,7 @@ mqtt_client|294 :: OTA FW version: v10
 
 升级成功或者升级失败会自动退出 OTA 例程，如果需要手动退出 OTA 例程，请使用 **`ali_ota_test stop`** 命令。
 
-```shell
+```c
 msh />ali_ota_test stop
 msh />[dbg] iotx_mc_disconnect(2121): rc = MQTTDisconnect() = 0
 [inf] _network_ssl_disconnect(514): ssl_disconnect
@@ -625,14 +616,14 @@ msh />[dbg] iotx_mc_disconnect(2121): rc = MQTTDisconnect() = 0
 mqtt_client|340 :: out of sample!
 ```
 
-## 注意事项
-
-- 使用前请在 `menuconfig` 里配置自己的设备激活凭证（PRODUCT_KEY、DEVICE_NAME 和 DEVICE_SECRET）
-- 使用 `menuconfig` 配置选择要接入的平台（**LinkDevelop** 或者 **LinkPlatform**）
-- 开启 OTA 功能必须使能加密连接，默认选择（因为 OTA 升级**必须使用 HTTPS** 下载固件）
+!!! note "注意事项"
+    - 使用前请在 `menuconfig` 里配置自己的设备激活凭证（PRODUCT_KEY、DEVICE_NAME 和 DEVICE_SECRET）
+    - 使用 `menuconfig` 配置选择要接入的平台（**LinkDevelop** 或者 **LinkPlatform**）
+    - 开启 OTA 功能必须使能加密连接，默认选择（因为 OTA 升级**必须使用 HTTPS** 下载固件）
 
 ## 常见问题
 
-- MbedTLS 返回 0x7200 错误
+### Q: MbedTLS 返回 0x7200 错误
 
-    通常是由于 MbedTLS 帧长度过小，请增加 MbedTLS 帧长度（**至少需要 8K 大小**）。
+**A:** 通常是由于 MbedTLS 帧长度过小，请增加 MbedTLS 帧长度（**至少需要 8K 大小**）。
+ 
