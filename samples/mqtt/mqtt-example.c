@@ -115,12 +115,13 @@ static char* rt_strlwr(char *str)
 static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
     iotx_mqtt_topic_info_pt topic_info = (iotx_mqtt_topic_info_pt)msg->msg;
+    uintptr_t packet_id = (uintptr_t)(msg->msg);
+
     if (topic_info == NULL)
     {
         rt_kprintf("Topic info is null! Exit.");
         return;
     }
-    uintptr_t packet_id = (uintptr_t)topic_info->packet_id;
 
     switch (msg->event_type) {
         case IOTX_MQTT_EVENT_UNDEF:
