@@ -325,6 +325,7 @@ static int MQTTSubscribe(iotx_mc_client_t *c, const char *topicFilter, iotx_mqtt
                          iotx_mqtt_event_handle_func_fpt messageHandler, void *pcontext)
 {
     int len = 0;
+    int qos_sub = (int)qos;
     iotx_time_t timer;
     MQTTString topic = MQTTString_initializer;
     iotx_mc_topic_handle_t handler = {topicFilter, {messageHandler, pcontext}};
@@ -342,7 +343,7 @@ static int MQTTSubscribe(iotx_mc_client_t *c, const char *topicFilter, iotx_mqtt
     HAL_MutexLock(c->lock_write_buf);
 
     len = MQTTSerialize_subscribe((unsigned char *)c->buf_send, c->buf_size_send, 0, (unsigned short)msgId, 1, &topic,
-                                  (int *)&qos);
+                                  (int *)&qos_sub);
     if (len <= 0) {
         HAL_MutexUnlock(c->lock_write_buf);
         return MQTT_SUBSCRIBE_PACKET_ERROR;
