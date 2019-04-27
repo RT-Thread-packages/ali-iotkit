@@ -351,6 +351,7 @@ static int _TLSConnectNetwork(TLSDataParams_t *pTlsData, const char *addr, const
     }
 #else
     if (0 != (ret = mbedtls_net_connect(&(pTlsData->fd), addr, port, MBEDTLS_NET_PROTO_TCP))) {
+        pTlsData->fd.fd = -1;
         SSL_LOG(" failed ! net_connect returned -0x%04x", -ret);
         return ret;
     }
@@ -498,7 +499,12 @@ static int _network_ssl_write(TLSDataParams_t *pTlsData, const char *buffer, int
 static void _network_ssl_disconnect(TLSDataParams_t *pTlsData)
 {
     mbedtls_ssl_close_notify(&(pTlsData->ssl));
-    mbedtls_net_free(&(pTlsData->fd));
+
+    if((pTlsData->fd.fd) >= 0)
+    {
+        mbedtls_net_free(&(pTlsData->fd));
+    }
+    
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     mbedtls_x509_crt_free(&(pTlsData->cacertl));
     if ((pTlsData->pkey).pk_info != NULL) {
