@@ -16,45 +16,40 @@
  *
  */
 
+#include <rtthread.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <errno.h>
+// #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
 
-#include <rtthread.h>
+#define ALI_IOTKIT_HAL_TCP_DEBUG
 
-#include "iot_import.h"
+#ifdef ALI_IOTKIT_HAL_TCP_DEBUG
+#define DBG_TAG                        "ali.tcp"
+#define DBG_LVL                        DBG_INFO
+#include <rtdbg.h>
+#else
+#define LOG_D(...)
+#define LOG_I(...)
+#define LOG_W(...)
+#define LOG_E(...)
+#endif
 
-#undef  perror
-#define perror rt_kprintf
+extern void HAL_Printf(const char *fmt, ...);
+extern uint64_t HAL_UptimeMs(void);
 
 #define PLATFORM_RTTHREADSOCK_LOG(format, ...) \
     do { \
-        HAL_Printf("LINUXSOCK %u %s() | "format"\n", __LINE__, __FUNCTION__, ##__VA_ARGS__);\
+        HAL_Printf("SOCK %u %s() | "format"\n", __LINE__, __FUNCTION__, ##__VA_ARGS__);\
     } while(0);
-
-
-static uint64_t _rtthread_get_time_ms(void)
-{
-#if (RT_TICK_PER_SECOND == 1000)
-    /* #define RT_TICK_PER_SECOND 1000 */
-    return (uint64_t)rt_tick_get();
-#else
-	uint64_t tick = 0;
-	uint64_t clock_ms = 0;
-
-	tick = rt_tick_get();
-	tick = tick * 1000;
-	return (uint64_t)((tick + RT_TICK_PER_SECOND - 1)/RT_TICK_PER_SECOND);
-#endif
-}
 
 static uint64_t _rtthread_time_left(uint64_t t_end, uint64_t t_now)
 {
@@ -80,7 +75,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 
     memset(&hints, 0, sizeof(hints));
 
-    PLATFORM_RTTHREADSOCK_LOG("establish tcp connection with server(host=%s port=%u)", host, port);
+    PLATFORM_RTTHREADSOCK_LOG("establish tcp connection with server(host=%s port=%d)", host, port);
 
     hints.ai_family = AF_INET; /* only IPv4 */
     hints.ai_socktype = SOCK_STREAM;
@@ -88,20 +83,20 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     sprintf(service, "%u", port);
 
     if ((rc = getaddrinfo(host, service, &hints, &addrInfoList)) != 0) {
-        perror("getaddrinfo error");
+        LOG_E("getaddrinfo error");
         return 0;
     }
 
     for (cur = addrInfoList; cur != NULL; cur = cur->ai_next) {
         if (cur->ai_family != AF_INET) {
-            perror("socket type error");
+            LOG_E("socket type error");
             rc = 0;
             continue;
         }
 
         fd = socket(cur->ai_family, cur->ai_socktype, cur->ai_protocol);
         if (fd < 0) {
-            perror("create socket error");
+            LOG_E("create socket error");
             rc = 0;
             continue;
         }
@@ -112,7 +107,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
         }
 
         close(fd);
-        perror("connect error");
+        LOG_E("connect error");
         rc = 0;
     }
 
@@ -132,7 +127,7 @@ int32_t HAL_TCP_Destroy(uintptr_t fd)
 
     rc = close((int) fd);
     if (0 != rc) {
-        perror("closesocket error");
+        LOG_E("closesocket error");
         return -1;
     }
 
@@ -146,12 +141,12 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
     uint64_t t_end, t_left;
     fd_set sets;
 
-    t_end = _rtthread_get_time_ms() + timeout_ms;
+    t_end = HAL_UptimeMs() + timeout_ms;
     len_sent = 0;
     ret = 1; /* send one time if timeout_ms is value 0 */
 
     do {
-        t_left = _rtthread_time_left(t_end, _rtthread_get_time_ms());
+        t_left = _rtthread_time_left(t_end, HAL_UptimeMs());
 
         if (0 != t_left) {
             struct timeval timeout;
@@ -171,7 +166,7 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
                     continue;
                 }
             } else if (0 == ret) {
-                PLATFORM_RTTHREADSOCK_LOG("select-write timeout %d", (int)fd);
+                PLATFORM_RTTHREADSOCK_LOG("select-write timeout %d", timeout_ms);
                 break;
             } else {
                 if (EINTR == errno) {
@@ -179,7 +174,7 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
                     continue;
                 }
 
-                perror("select-write fail");
+                LOG_E("select-write fail");
                 break;
             }
         }
@@ -196,11 +191,11 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
                     continue;
                 }
 
-                perror("send fail");
+                LOG_E("send fail");
                 break;
             }
         }
-    } while ((len_sent < len) && (_rtthread_time_left(t_end, _rtthread_get_time_ms()) > 0));
+    } while ((len_sent < len) && (_rtthread_time_left(t_end, HAL_UptimeMs()) > 0));
 
     return len_sent;
 }
@@ -213,12 +208,12 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
     fd_set sets;
     struct timeval timeout;
 
-    t_end = _rtthread_get_time_ms() + timeout_ms;
+    t_end = HAL_UptimeMs() + timeout_ms;
     len_recv = 0;
     err_code = 0;
 
     do {
-        t_left = _rtthread_time_left(t_end, _rtthread_get_time_ms());
+        t_left = _rtthread_time_left(t_end, HAL_UptimeMs());
         if (0 == t_left) {
             break;
         }
@@ -234,7 +229,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
             if (ret > 0) {
                 len_recv += ret;
             } else if (0 == ret) {
-                perror("connection is closed");
+                LOG_E("connection is closed");
                 err_code = -1;
                 break;
             } else {
@@ -242,14 +237,14 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                     PLATFORM_RTTHREADSOCK_LOG("EINTR be caught");
                     continue;
                 }
-                perror("recv fail");
+                LOG_E("recv fail");
                 err_code = -2;
                 break;
             }
         } else if (0 == ret) {
             break;
         } else {
-            perror("select-recv fail");
+            LOG_E("select-recv fail");
             err_code = -2;
             break;
         }

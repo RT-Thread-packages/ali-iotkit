@@ -16,6 +16,8 @@
  *
  */
 
+#include <rtthread.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,16 +25,22 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-#include <errno.h>
+// #include <errno.h>
 #include <netdb.h>
 #include <unistd.h>
 
-#include "iot_import.h"
+#define ALI_IOTKIT_HAL_UDP_DEBUG
 
-#include <rtthread.h>
-
-#undef  perror
-#define perror rt_kprintf
+#ifdef ALI_IOTKIT_HAL_UDP_DEBUG
+#define DBG_TAG                        "ali.udp"
+#define DBG_LVL                        DBG_INFO
+#include <rtdbg.h>
+#else
+#define LOG_D(...)
+#define LOG_I(...)
+#define LOG_W(...)
+#define LOG_E(...)
+#endif
 
 void *HAL_UDP_create(char *host, unsigned short port)
 {
@@ -58,7 +66,7 @@ void *HAL_UDP_create(char *host, unsigned short port)
 
     rc = getaddrinfo(host, port_ptr, &hints, &res);
     if (0 != rc) {
-        perror("getaddrinfo error");
+        LOG_E("getaddrinfo error");
         return (void *)(-1);
     }
 
@@ -72,7 +80,7 @@ void *HAL_UDP_create(char *host, unsigned short port)
 
             socket_id = socket(ainfo->ai_family, ainfo->ai_socktype, ainfo->ai_protocol);
             if (socket_id < 0) {
-                perror("create socket error");
+                LOG_E("create socket error");
                 continue;
             }
             if (0 == connect(socket_id, ainfo->ai_addr, ainfo->ai_addrlen)) {
