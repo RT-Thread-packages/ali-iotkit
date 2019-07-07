@@ -50,7 +50,6 @@ iotkit-embedded/src/dev_sign/dev_sign_mqtt.c
 iotkit-embedded/src/ota/iotx_ota.c
 iotkit-embedded/src/ota/ota_fetch.c
 iotkit-embedded/src/ota/ota_lib.c
-iotkit-embedded/wrappers/tls/HAL_TLS_mbedtls.c
 iotkit-embedded/certs/root_ca.c
 ports/rtthread/HAL_OS_rtthread.c
 ports/rtthread/HAL_TCP_rtthread.c
@@ -58,6 +57,9 @@ ports/rtthread/HAL_UDP_rtthread.c
 iotkit-embedded/samples/dev_model/cJSON.c
 iotkit-embedded/samples/dev_model/linkkit_example_solo.c
 """)
+
+if GetDepend(['FEATURE_SUPPORT_TLS']):
+    src += Glob('iotkit-embedded/wrappers/tls/HAL_TLS_mbedtls.c')
 
 CPPPATH += [cwd + '/iotkit-embedded/src/dev_model']
 CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/client']
