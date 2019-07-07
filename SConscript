@@ -73,9 +73,36 @@ if GetDepend(['MQTT_COMM_ENABLED']):
 #### mqtt end ####
 
 #
-# coap model
+# coap
 #
-
+if GetDepend(['COAP_COMM_ENABLED']):
+    if GetDepend(['COAP_CLIENT']):
+        src += Split("""
+        iotkit-embedded/src/coap/client/CoAPExport.c
+        iotkit-embedded/src/coap/client/CoAPMessage.c
+        iotkit-embedded/src/coap/client/CoAPNetwork.c
+        iotkit-embedded/src/coap/client/iotx_coap_api.c
+        """)
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/client']
+    if GetDepend(['COAP_PACKET']):
+        src += Split("""
+        iotkit-embedded/src/coap/CoAPPacket/CoAPDeserialize_common.c
+        iotkit-embedded/src/coap/CoAPPacket/CoAPMessage_common.c
+        iotkit-embedded/src/coap/CoAPPacket/CoAPSerialize_common.c
+        """)
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/CoAPPacket']
+    if GetDepend(['COAP_SERVER']):
+        src += Split("""
+        iotkit-embedded/src/coap/server/CoAPExport.c
+        iotkit-embedded/src/coap/server/CoAPMessage.c
+        iotkit-embedded/src/coap/server/CoAPNetwork.c
+        iotkit-embedded/src/coap/server/CoAPObserve.c
+        iotkit-embedded/src/coap/server/CoAPPlatform.c
+        iotkit-embedded/src/coap/server/CoAPResource.c
+        iotkit-embedded/src/coap/server/CoAPServer.c
+        """)
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/server']
+    CPPPATH += [cwd + '/iotkit-embedded/src/coap']
 #### coap end ####
 
 #
@@ -96,15 +123,17 @@ if GetDepend(['DEVICE_MODEL_ENABLED']):
     iotkit-embedded/src/dev_model/dm_ota.c
     iotkit-embedded/src/dev_model/dm_msg_process.c
     iotkit-embedded/src/dev_model/dm_utils.c
-    iotkit-embedded/src/dev_model/dm_log_report.c
     iotkit-embedded/src/dev_model/iotx_cm_mqtt.c
     iotkit-embedded/src/dev_model/impl_linkkit.c
     iotkit-embedded/src/dev_model/iotx_cm.c
     """)
+    if GetDepend(['LOG_REPORT_TO_CLOUD']):
+        src += Split("""
+        iotkit-embedded/src/dev_model/dm_log_report.c
+        """)
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model']
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/client']
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/server']
-    CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/client']
 #### device model end ####
 
 #
