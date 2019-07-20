@@ -29,18 +29,9 @@
 #include <netdb.h>
 #include <unistd.h>
 
-#define ALI_IOTKIT_HAL_UDP_DEBUG
-
-#ifdef ALI_IOTKIT_HAL_UDP_DEBUG
 #define DBG_TAG                        "ali.udp"
 #define DBG_LVL                        DBG_INFO
 #include <rtdbg.h>
-#else
-#define LOG_D(...)
-#define LOG_I(...)
-#define LOG_W(...)
-#define LOG_E(...)
-#endif
 
 void *HAL_UDP_create(char *host, unsigned short port)
 {

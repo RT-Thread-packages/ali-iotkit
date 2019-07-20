@@ -248,6 +248,7 @@ src += Split("""
 ports/rtthread/HAL_OS_rtthread.c
 ports/rtthread/HAL_TCP_rtthread.c
 ports/rtthread/HAL_UDP_rtthread.c
+ports/wrapper.c
 """)
 
 if GetDepend(['SUPPORT_TLS']) or GetDepend(['COAP_DTLS_SUPPORT']):
@@ -257,7 +258,6 @@ if GetDepend(['SUPPORT_TLS']):
 if GetDepend(['COAP_DTLS_SUPPORT']):
     src += Glob('port/tls/mbedtls/HAL_DTLS_mbedtls.c')
 CPPPATH += [cwd + '/iotkit-embedded/wrappers']
-CPPPATH += [cwd + '/iotkit-embedded/wrappers/tls']
 #### wrappers | port end ####
 
 #
@@ -271,6 +271,6 @@ if GetDepend(['PKG_USING_ALI_IOTKIT_DEV_MODEL_SAMPLE']):
     CPPPATH += [cwd + '/iotkit-embedded/samples/dev_model']
 #### samples end ####
 
-group = DefineGroup('ali-iotkit', src, depend = [''], CPPPATH = CPPPATH)
+group = DefineGroup('ali-iotkit', src, depend = ['PKG_USING_ALI_IOTKIT'], CPPPATH = CPPPATH)
 
 Return('group')

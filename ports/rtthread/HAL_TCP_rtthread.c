@@ -30,18 +30,9 @@
 #include <netinet/tcp.h>
 #include <netdb.h>
 
-#define ALI_IOTKIT_HAL_TCP_DEBUG
-
-#ifdef ALI_IOTKIT_HAL_TCP_DEBUG
 #define DBG_TAG                        "ali.tcp"
 #define DBG_LVL                        DBG_INFO
 #include <rtdbg.h>
-#else
-#define LOG_D(...)
-#define LOG_I(...)
-#define LOG_W(...)
-#define LOG_E(...)
-#endif
 
 extern void HAL_Printf(const char *fmt, ...);
 extern uint64_t HAL_UptimeMs(void);
