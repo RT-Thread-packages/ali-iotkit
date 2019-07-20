@@ -24,7 +24,6 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
-// #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netinet/tcp.h>
@@ -36,11 +35,6 @@
 
 extern void HAL_Printf(const char *fmt, ...);
 extern uint64_t HAL_UptimeMs(void);
-
-#define PLATFORM_RTTHREADSOCK_LOG(format, ...) \
-    do { \
-        HAL_Printf("SOCK %u %s() | "format"\n", __LINE__, __FUNCTION__, ##__VA_ARGS__);\
-    } while(0);
 
 static uint64_t _rtthread_time_left(uint64_t t_end, uint64_t t_now)
 {
@@ -66,7 +60,7 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 
     memset(&hints, 0, sizeof(hints));
 
-    PLATFORM_RTTHREADSOCK_LOG("establish tcp connection with server(host=%s port=%d)", host, port);
+    LOG_D("establish tcp connection with server(host=%s port=%d)", host, port);
 
     hints.ai_family = AF_INET; /* only IPv4 */
     hints.ai_socktype = SOCK_STREAM;
@@ -103,9 +97,9 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
     }
 
     if (0 == rc) {
-        PLATFORM_RTTHREADSOCK_LOG("fail to establish tcp");
+        LOG_E("fail to establish tcp");
     } else {
-        PLATFORM_RTTHREADSOCK_LOG("success to establish tcp, fd=%d", rc);
+        LOG_D("success to establish tcp, fd=%d", rc);
     }
     freeaddrinfo(addrInfoList);
 
@@ -151,17 +145,17 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             ret = select(fd + 1, NULL, &sets, NULL, &timeout);
             if (ret > 0) {
                 if (0 == FD_ISSET(fd, &sets)) {
-                    PLATFORM_RTTHREADSOCK_LOG("Should NOT arrive");
+                    LOG_E("Should NOT arrive");
                     /* If timeout in next loop, it will not sent any data */
                     ret = 0;
                     continue;
                 }
             } else if (0 == ret) {
-                PLATFORM_RTTHREADSOCK_LOG("select-write timeout %d", timeout_ms);
+                LOG_E("select-write timeout %d", timeout_ms);
                 break;
             } else {
                 if (EINTR == errno) {
-                    PLATFORM_RTTHREADSOCK_LOG("EINTR be caught");
+                    LOG_E("EINTR be caught");
                     continue;
                 }
 
@@ -175,10 +169,10 @@ int32_t HAL_TCP_Write(uintptr_t fd, const char *buf, uint32_t len, uint32_t time
             if (ret > 0) {
                 len_sent += ret;
             } else if (0 == ret) {
-                PLATFORM_RTTHREADSOCK_LOG("No data be sent");
+                LOG_E("No data be sent");
             } else {
                 if (EINTR == errno) {
-                    PLATFORM_RTTHREADSOCK_LOG("EINTR be caught");
+                    LOG_E("EINTR be caught");
                     continue;
                 }
 
@@ -225,7 +219,7 @@ int32_t HAL_TCP_Read(uintptr_t fd, char *buf, uint32_t len, uint32_t timeout_ms)
                 break;
             } else {
                 if (EINTR == errno) {
-                    PLATFORM_RTTHREADSOCK_LOG("EINTR be caught");
+                    LOG_E("EINTR be caught");
                     continue;
                 }
                 LOG_E("recv fail");
