@@ -64,21 +64,6 @@ char DEVICE_SECRET[IOTX_DEVICE_SECRET_LEN + 1] = {0};
 
 static user_example_ctx_t g_user_example_ctx;
 
-static char* rt_strlwr(char *str)
-{
-    if(str == NULL)
-        return NULL;
-         
-    char *p = str;
-    while (*p != '\0')
-    {
-        if(*p >= 'A' && *p <= 'Z')
-            *p = (*p) + 0x20;
-        p++;
-    }
-    return str;
-}
-
 /** cloud connected event callback */
 static int user_connected_event_handler(void)
 {
@@ -364,7 +349,6 @@ int linkkit_solo_main(void)
         /* Post Event Example */
         if ((cnt % 10) == 0) {
             user_post_event();
-					msh_exec("ps", strlen("ps"));
         }
 
         if (++cnt > 3600) {

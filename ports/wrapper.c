@@ -16,10 +16,20 @@
 #define DBG_LVL                        DBG_INFO
 #include <rtdbg.h>
 
+#if defined(PKG_USING_ALI_IOTKIT_PRODUCT_KEY) \
+    && defined(PKG_USING_ALI_IOTKIT_PRODUCT_SECRET) \
+    && defined(PKG_USING_ALI_IOTKIT_DEVICE_NAME) \
+    && defined(PKG_USING_ALI_IOTKIT_DEVICE_SECRET)
+char _product_key[IOTX_PRODUCT_KEY_LEN + 1]       = PKG_USING_ALI_IOTKIT_PRODUCT_KEY;
+char _product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = PKG_USING_ALI_IOTKIT_PRODUCT_SECRET;
+char _device_name[IOTX_DEVICE_NAME_LEN + 1]       = PKG_USING_ALI_IOTKIT_DEVICE_NAME;
+char _device_secret[IOTX_DEVICE_SECRET_LEN + 1]   = PKG_USING_ALI_IOTKIT_DEVICE_SECRET;
+#else
 char _product_key[IOTX_PRODUCT_KEY_LEN + 1]       = "a1wlm6xAOPf";
 char _product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "NfIdVcfBP7rtH24H";
 char _device_name[IOTX_DEVICE_NAME_LEN + 1]       = "DEV_419_ALINK_1";
 char _device_secret[IOTX_DEVICE_SECRET_LEN + 1]   = "asXuHqpF68Hqxx8nHQ077QkiikHmYJrA";
+#endif
 
 int HAL_GetFirmwareVersion(char *version)
 {
