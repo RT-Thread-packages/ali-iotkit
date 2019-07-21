@@ -254,9 +254,9 @@ ports/wrapper.c
 if GetDepend(['SUPPORT_TLS']) or GetDepend(['COAP_DTLS_SUPPORT']):
     src += Glob('iotkit-embedded/certs/root_ca.c')
 if GetDepend(['SUPPORT_TLS']):
-    src += Glob('port/tls/mbedtls/HAL_TLS_mbedtls.c')
+    src += Glob('ports/tls/mbedtls/HAL_TLS_mbedtls.c')
 if GetDepend(['COAP_DTLS_SUPPORT']):
-    src += Glob('port/tls/mbedtls/HAL_DTLS_mbedtls.c')
+    src += Glob('ports/tls/mbedtls/HAL_DTLS_mbedtls.c')
 CPPPATH += [cwd + '/iotkit-embedded/wrappers']
 #### wrappers | port end ####
 

@@ -7,10 +7,10 @@
 #define DBG_LVL                        DBG_INFO
 #include <rtdbg.h>
 
-char _product_key[IOTX_PRODUCT_KEY_LEN + 1]       = "a1ZETBPbycq";
-char _product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "L68wCVXYUaNg1Ey9";
-char _device_name[IOTX_DEVICE_NAME_LEN + 1]       = "example1";
-char _device_secret[IOTX_DEVICE_SECRET_LEN + 1]   = "";
+char _product_key[IOTX_PRODUCT_KEY_LEN + 1]       = "a1wlm6xAOPf";
+char _product_secret[IOTX_PRODUCT_SECRET_LEN + 1] = "NfIdVcfBP7rtH24H";
+char _device_name[IOTX_DEVICE_NAME_LEN + 1]       = "DEV_419_ALINK_1";
+char _device_secret[IOTX_DEVICE_SECRET_LEN + 1]   = "asXuHqpF68Hqxx8nHQ077QkiikHmYJrA";
 
 int HAL_GetFirmwareVersion(char *version)
 {
