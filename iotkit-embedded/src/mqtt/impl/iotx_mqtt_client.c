@@ -534,7 +534,7 @@ static int iotx_mc_read_packet(iotx_mc_client_t *c, iotx_time_t *timer, unsigned
     left_t = (left_t == 0) ? 1 : left_t;
     rc = c->ipstack.read(&c->ipstack, c->buf_read, 1, left_t);
     if (0 == rc) { /* timeout */
-        *packet_type = 0;
+        *packet_type = MQTT_CPT_RESERVED;
         HAL_MutexUnlock(c->lock_read_buf);
         return SUCCESS_RETURN;
     } else if (1 != rc) {
@@ -630,6 +630,7 @@ static int iotx_mc_read_packet(iotx_mc_client_t *c, iotx_time_t *timer, unsigned
         remainDataBuf = NULL;
 #endif
         HAL_MutexUnlock(c->lock_read_buf);
+        *packet_type = MQTT_CPT_RESERVED;
         if (NULL != c->handle_event.h_fp) {
             iotx_mqtt_event_msg_t msg;
 
@@ -766,11 +767,13 @@ static int _mqtt_connect(void *client)
     int rc = FAIL_RETURN;
     int try_count = 1;
     iotx_mc_client_t *pClient = (iotx_mc_client_t *)client;
+    int userKeepAliveInterval = 0;
 
     if (NULL == pClient) {
         return NULL_VALUE_ERROR;
     }
-
+    userKeepAliveInterval = pClient->connect_data.keepAliveInterval;
+    pClient->connect_data.keepAliveInterval = CONFIG_MQTT_KEEPALIVE_INTERVAL_MAX;
     mqtt_info("connect params: MQTTVersion=%d, clientID=%s, keepAliveInterval=%d, username=%s",
               pClient->connect_data.MQTTVersion,
               pClient->connect_data.clientID.cstring,
@@ -780,6 +783,7 @@ static int _mqtt_connect(void *client)
     /* Establish TCP or TLS connection */
     do {
         rc = MQTTConnect(pClient);
+        pClient->connect_data.keepAliveInterval = userKeepAliveInterval;
 
         if (rc != SUCCESS_RETURN) {
             pClient->ipstack.disconnect(&pClient->ipstack);
@@ -1379,6 +1383,11 @@ static int iotx_mc_handle_recv_PUBLISH(iotx_mc_client_t *c)
     }
     topic_msg.qos = (unsigned char)qos;
     topic_msg.payload_len = payload_len;
+
+    if (topicName.lenstring.len == 0 || topicName.lenstring.data == NULL) {
+        mqtt_err("Null topicName");
+        return MQTT_PUBLISH_PACKET_ERROR;
+    }
 
 #ifdef INFRA_LOG_NETWORK_PAYLOAD
 

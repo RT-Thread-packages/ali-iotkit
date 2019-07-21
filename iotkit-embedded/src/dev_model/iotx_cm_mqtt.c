@@ -28,12 +28,15 @@ iotx_cm_connection_t *iotx_cm_open_mqtt(iotx_cm_init_param_t *params)
         cm_err("_mqtt_conncection malloc failed!");
         goto failed;
     }
+    memset(_mqtt_conncection, 0, sizeof(iotx_cm_connection_t));
 
     mqtt_param = (iotx_mqtt_param_t *)cm_malloc(sizeof(iotx_mqtt_param_t));
     if (mqtt_param == NULL) {
         cm_err("mqtt_param malloc failed!");
         goto failed;
     }
+    memset(mqtt_param, 0, sizeof(iotx_mqtt_param_t));
+
     _mqtt_conncection->open_params = mqtt_param;
 
     mqtt_param->request_timeout_ms = params->request_timeout_ms;
@@ -207,7 +210,7 @@ static void iotx_cloud_conn_mqtt_event_handle(void *pcontext, void *pclient, iot
     }
 }
 
-
+extern sdk_impl_ctx_t g_sdk_impl_ctx;
 static int  _mqtt_connect(uint32_t timeout)
 {
     void *pclient;
@@ -250,6 +253,10 @@ static int  _mqtt_connect(uint32_t timeout)
         cm_err("IOT_SetupConnInfo failed");
         HAL_SleepMs(500);
     } while (!utils_time_is_expired(&timer));
+
+    if (g_sdk_impl_ctx.mqtt_customzie_info) {
+        ((iotx_mqtt_param_t *)_mqtt_conncection->open_params)->customize_info = g_sdk_impl_ctx.mqtt_customzie_info;
+    }
 
     do {
         pclient = IOT_MQTT_Construct((iotx_mqtt_param_t *)_mqtt_conncection->open_params);

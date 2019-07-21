@@ -1,5 +1,9 @@
 # Ali IoTKit
 
+```
+Ali IoTKit 软件包已经同步更新
+```
+
 ## 1. 介绍
 
 **ali-iotkit** 是 RT-Thread 移植的用于连接阿里云 IoT 平台的软件包。基础 SDK 是阿里提供的 [**iotkit-embedded C-SDK**](https://github.com/aliyun/iotkit-embedded)。

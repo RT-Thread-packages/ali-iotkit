@@ -140,7 +140,7 @@ typedef struct {
     const char                 *client_id;              /* Specify MQTT connection client id*/
     const char                 *username;               /* Specify MQTT user name */
     const char                 *password;               /* Specify MQTT password */
-
+    const char                 *customize_info;         /* Specify User custom information */
     /* Specify MQTT transport channel and key.
      * If the value is NULL, it means that use TCP channel,
      * If the value is NOT NULL, it means that use SSL/TLS channel and
@@ -376,7 +376,7 @@ int IOT_MQTT_Nwk_Event_Handler(void *handle, iotx_mqtt_nwk_event_t event, iotx_m
 #define CONFIG_MQTT_KEEPALIVE_INTERVAL_MIN      (30)
 
 /* Maximum keepalive interval of MQTT request in second */
-#define CONFIG_MQTT_KEEPALIVE_INTERVAL_MAX      (180)
+#define CONFIG_MQTT_KEEPALIVE_INTERVAL_MAX      (1200)
 
 #if defined(__cplusplus)
 }

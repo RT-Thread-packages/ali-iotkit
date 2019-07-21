@@ -43,6 +43,7 @@
 
 static void        *g_mqtt_client = NULL;
 iotx_sign_mqtt_t    g_default_sign;
+static char         iotx_ca_crt_itls[IOTX_PRODUCT_KEY_LEN + IOTX_PRODUCT_SECRET_LEN + 2] = {0};
 
 /* Handle structure of subscribed topic */
 typedef struct  {
@@ -330,7 +331,6 @@ static int _iotx_dynamic_register(iotx_http_region_types_t region, iotx_dev_meta
 
 #ifdef MQTT_PRE_AUTH
 #include "infra_preauth.h"
-extern int _sign_get_clientid(char *clientid_string, const char *device_id);
 extern int _iotx_generate_sign_string(const char *device_id, const char *device_name, const char *product_key,
                                       const char *device_secret, char *sign_string);
 
@@ -349,11 +349,6 @@ static int _iotx_preauth(iotx_mqtt_region_types_t region, iotx_dev_meta_info_t *
     memcpy(device_id + strlen(device_id), ".", strlen("."));
     memcpy(device_id + strlen(device_id), meta->device_name, strlen(meta->device_name));
 
-    /* setup clientid */
-    if (_sign_get_clientid(preauth_out->clientid, device_id) != SUCCESS_RETURN) {
-        return ERROR_DEV_SIGN_CLIENT_ID_TOO_SHORT;
-    }
-
     /* setup sign_string */
     res = _iotx_generate_sign_string(device_id, meta->device_name, meta->product_key, meta->device_secret, sign_string);
     if (res < SUCCESS_RETURN) {
@@ -364,14 +359,18 @@ static int _iotx_preauth(iotx_mqtt_region_types_t region, iotx_dev_meta_info_t *
 }
 #endif /* #ifdef MQTT_PRE_AUTH */
 
+extern int _sign_get_clientid(char *clientid_string, const char *device_id, const char *custom_kv, uint8_t enable_itls);
+
 /************************  Public Interface ************************/
 void *IOT_MQTT_Construct(iotx_mqtt_param_t *pInitParams)
 {
     void *pclient;
     iotx_dev_meta_info_t meta_info;
     iotx_mqtt_param_t mqtt_params;
+    char device_id[IOTX_PRODUCT_KEY_LEN + IOTX_DEVICE_NAME_LEN + 1] = {0};
     int region = 0;
     int dynamic = 0;
+    uint8_t enalbe_itls = 0;
     int ret;
     void *callback;
 
@@ -442,13 +441,42 @@ void *IOT_MQTT_Construct(iotx_mqtt_param_t *pInitParams)
     }
 #endif /* #ifdef MQTT_PRE_AUTH */
 
+    /* setup device_id */
+    memcpy(device_id, meta_info.product_key, strlen(meta_info.product_key));
+    memcpy(device_id + strlen(device_id), ".", strlen("."));
+    memcpy(device_id + strlen(device_id), meta_info.device_name, strlen(meta_info.device_name));
+
+    /* reconfig clientid, append custome clientKV and itls switch flag */
+    if (pInitParams != NULL && pInitParams->customize_info != NULL) {
+        if (strstr(pInitParams->customize_info, "authtype=id2") != NULL) {
+            enalbe_itls = 1;
+        }
+        else {
+            enalbe_itls = 0;
+        }
+    }
+
+    if (_sign_get_clientid(g_default_sign.clientid, device_id,
+                           (pInitParams != NULL) ? pInitParams->customize_info : NULL, enalbe_itls) != SUCCESS_RETURN) {
+        return NULL;
+    }
+
     /* Initialize MQTT parameter */
     memset(&mqtt_params, 0x0, sizeof(iotx_mqtt_param_t));
 
 #ifdef SUPPORT_TLS
     {
         extern const char *iotx_ca_crt;
-        mqtt_params.pub_key = iotx_ca_crt;
+        if (enalbe_itls == 0) {
+            mqtt_params.pub_key = iotx_ca_crt;
+        }
+        else {
+            memset(iotx_ca_crt_itls, 0, sizeof(iotx_ca_crt_itls));
+            HAL_GetProductKey(iotx_ca_crt_itls);
+            iotx_ca_crt_itls[strlen(iotx_ca_crt_itls)] = '.';
+            HAL_GetProductSecret(iotx_ca_crt_itls + strlen(iotx_ca_crt_itls));
+            mqtt_params.pub_key = iotx_ca_crt_itls;
+        }
     }
 #endif
     mqtt_params.request_timeout_ms    = CONFIG_MQTT_REQUEST_TIMEOUT;
