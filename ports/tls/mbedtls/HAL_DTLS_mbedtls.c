@@ -14,6 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+ * Again edit by rt-thread group
+ * Change Logs:
+ * Date          Author          Notes
+ * 2019-07-21    MurphyZhao      first edit
  */
 
 #include <stdio.h>

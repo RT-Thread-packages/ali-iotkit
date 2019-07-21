@@ -1,3 +1,12 @@
+/*
+ * Copyright (C) 2015-2018 Alibaba Group Holding Limited
+ * 
+ * Again edit by rt-thread group
+ * Change Logs:
+ * Date          Author          Notes
+ * 2019-07-21    MurphyZhao      first edit
+ */
+
 #include <rtthread.h>
 #include <string.h>
 

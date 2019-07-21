@@ -1,5 +1,10 @@
 /*
  * Copyright (C) 2015-2018 Alibaba Group Holding Limited
+ * 
+ * Again edit by rt-thread group
+ * Change Logs:
+ * Date          Author          Notes
+ * 2019-07-21    MurphyZhao      first edit
  */
 
 #include "rtthread.h"
@@ -376,7 +381,7 @@ int linkkit_solo_main(void)
 
     return 0;
 }
-MSH_CMD_EXPORT(linkkit_solo_main, linkkit_solo_main);
+MSH_CMD_EXPORT_ALIAS(linkkit_solo_main, ali_linkkit_solo_sample, ali linkkit sole sample);
 
 #endif
 

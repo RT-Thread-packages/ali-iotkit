@@ -273,9 +273,20 @@ if GetDepend(['PKG_USING_ALI_IOTKIT_DEV_MODEL_SAMPLE']):
     samples/dev_model/linkkit_example_solo.c
     """)
     CPPPATH += [cwd + '/iotkit-embedded/samples/dev_model']
+
+if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_SAMPLE']):
+    src += Split("""
+    samples/mqtt/mqtt-example.c
+    """)
+
 if GetDepend(['PKG_USING_ALI_IOTKIT_COAP_SAMPLE']):
     src += Split("""
     samples/coap/coap_example.c
+    """)
+
+if GetDepend(['PKG_USING_ALI_IOTKIT_OTA_SAMPLE']):
+    src += Split("""
+    samples/ota/ota_mqtt-example.c
     """)
 #### samples end ####
 
