@@ -331,8 +331,6 @@ int HAL_UDP_recvfrom(intptr_t sockfd,
     return -1;
 }
 
-
-
 int HAL_UDP_sendto(intptr_t sockfd,
                    const NetworkAddr *p_remote,
                    const unsigned char *p_data,

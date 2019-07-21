@@ -142,6 +142,9 @@ if GetDepend(['DEVICE_MODEL_ENABLED']):
         src += Glob("iotkit-embedded/src/dev_model/alcs/*.c")
         CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/alcs']
 
+    if GetDepend(['COAP_COMM_ENABLED']):
+        src += Glob("iotkit-embedded/src/dev_model/iotx_cm_coap.c")
+
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model']
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/client']
     CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/server']
@@ -248,6 +251,7 @@ src += Split("""
 ports/rtthread/HAL_OS_rtthread.c
 ports/rtthread/HAL_TCP_rtthread.c
 ports/rtthread/HAL_UDP_rtthread.c
+ports/rtthread/HAL_Crypt_rtthread.c
 ports/wrapper.c
 """)
 
@@ -269,6 +273,10 @@ if GetDepend(['PKG_USING_ALI_IOTKIT_DEV_MODEL_SAMPLE']):
     samples/dev_model/linkkit_example_solo.c
     """)
     CPPPATH += [cwd + '/iotkit-embedded/samples/dev_model']
+if GetDepend(['PKG_USING_ALI_IOTKIT_COAP_SAMPLE']):
+    src += Split("""
+    samples/coap/coap_example.c
+    """)
 #### samples end ####
 
 group = DefineGroup('ali-iotkit', src, depend = ['PKG_USING_ALI_IOTKIT'], CPPPATH = CPPPATH)
