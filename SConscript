@@ -251,7 +251,6 @@ src += Split("""
 ports/rtthread/HAL_OS_rtthread.c
 ports/rtthread/HAL_TCP_rtthread.c
 ports/rtthread/HAL_UDP_rtthread.c
-ports/rtthread/HAL_Crypt_rtthread.c
 ports/wrapper.c
 """)
 
@@ -261,6 +260,10 @@ if GetDepend(['SUPPORT_TLS']):
     src += Glob('ports/tls/mbedtls/HAL_TLS_mbedtls.c')
 if GetDepend(['COAP_DTLS_SUPPORT']):
     src += Glob('ports/tls/mbedtls/HAL_DTLS_mbedtls.c')
+    
+if GetDepend(['HAL_CRYPTO']):
+    src += Glob('ports/rtthread/HAL_Crypt_rtthread.c')
+
 CPPPATH += [cwd + '/iotkit-embedded/wrappers']
 #### wrappers | port end ####
 
