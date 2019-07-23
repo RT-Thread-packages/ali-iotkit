@@ -2,129 +2,297 @@ import os
 from building import *
 import rtconfig
 
-cwd  = GetCurrentDir()
+cwd     = GetCurrentDir()
 
-src  = []
+src     = []
 CPPPATH = []
-CPPDEFINES = []
-LOCAL_CCFLAGS = ''
 
-#sample
+#
+# atm
+#
+if GetDepend(['ATM_ENABLED']):
+    src += Glob("iotkit-embedded/src/atm/at_api.c")
+    if GetDepend(['AT_TCP_ENABLED']):
+        src += Split("""
+        iotkit-embedded/src/atm/at_conn_mbox.c
+        iotkit-embedded/src/atm/at_conn_mgmt.c
+        iotkit-embedded/src/atm/at_tcp.c
+        """)
+    if GetDepend(['AT_MQTT_ENABLED']):
+        src += Glob("iotkit-embedded/src/atm/at_mqtt.c")
+    if GetDepend(['AT_PARSER_ENABLED']):
+        src += Glob("iotkit-embedded/src/atm/at_parser.c")
+
+    CPPPATH += [cwd + '/iotkit-embedded/src/atm']
+#### atm end ####
+
+#
+# infra
+#
+src += Glob('iotkit-embedded/src/infra/infra_defs.c')
+
+if GetDepend(['INFRA_AES']):
+    src += Glob('iotkit-embedded/src/infra/infra_aes.c')
+if GetDepend(['INFRA_CJSON']):
+    src += Glob('iotkit-embedded/src/infra/infra_cjson.c')
+if GetDepend(['INFRA_COMPAT']):
+    src += Glob('iotkit-embedded/src/infra/infra_compat.c')
+if GetDepend(['INFRA_HTTPC']):
+    src += Glob('iotkit-embedded/src/infra/infra_httpc.c')
+if GetDepend(['INFRA_JSON_PARSER']):
+    src += Glob('iotkit-embedded/src/infra/infra_json_parser.c')
+if GetDepend(['INFRA_LOG']):
+    src += Glob('iotkit-embedded/src/infra/infra_log.c')
+if GetDepend(['INFRA_MD5']):
+    src += Glob('iotkit-embedded/src/infra/infra_md5.c')
+if GetDepend(['INFRA_MEM_STATS']):
+    src += Glob('iotkit-embedded/src/infra/infra_mem_stats.c')
+if GetDepend(['INFRA_NET']):
+    src += Glob('iotkit-embedded/src/infra/infra_net.c')
+if GetDepend(['INFRA_PREAUTH']):
+    src += Glob('iotkit-embedded/src/infra/infra_preauth.c')
+if GetDepend(['INFRA_LOG_NETWORK_PAYLOAD']):
+    src += Glob('iotkit-embedded/src/infra/infra_prt_nwk_payload.c')
+if GetDepend(['INFRA_REPORT']):
+    src += Glob('iotkit-embedded/src/infra/infra_report.c')
+if GetDepend(['INFRA_SHA1']):
+    src += Glob('iotkit-embedded/src/infra/infra_sha1.c')
+if GetDepend(['INFRA_SHA256']):
+    src += Glob('iotkit-embedded/src/infra/infra_sha256.c')
+if GetDepend(['INFRA_STRING']):
+    src += Glob('iotkit-embedded/src/infra/infra_string.c')
+if GetDepend(['INFRA_TIMER']):
+    src += Glob('iotkit-embedded/src/infra/infra_timer.c')
+
+CPPPATH += [cwd + '/iotkit-embedded/src/infra']
+#### infra end ####
+
+#
+# mqtt
+#
+if GetDepend(['MQTT_COMM_ENABLED']):
+    src += Glob('iotkit-embedded/src/mqtt/*.c')
+    if GetDepend(['MQTT_DEFAULT_IMPL']):
+        src += Glob('iotkit-embedded/src/mqtt/impl/*.c')
+        CPPPATH += [cwd + '/iotkit-embedded/src/mqtt/impl']
+
+    CPPPATH += [cwd + '/iotkit-embedded/src/mqtt']
+#### mqtt end ####
+
+#
+# coap
+#
+if GetDepend(['COAP_COMM_ENABLED']):
+    if GetDepend(['COAP_CLIENT']):
+        src += Glob('iotkit-embedded/src/coap/client/*.c')
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/client']
+    if GetDepend(['COAP_PACKET']):
+        src += Glob('iotkit-embedded/src/coap/CoAPPacket/*.c')
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/CoAPPacket']
+    if GetDepend(['COAP_SERVER']):
+        src += Glob('iotkit-embedded/src/coap/server/*.c')
+        CPPPATH += [cwd + '/iotkit-embedded/src/coap/server']
+    CPPPATH += [cwd + '/iotkit-embedded/src/coap']
+#### coap end ####
+
+
+#
+# device bind
+#
+if GetDepend(['DEV_BIND_ENABLED']):
+    src += Glob("iotkit-embedded/src/dev_bind/impl/*.c")
+    src += Glob("iotkit-embedded/src/dev_bind/impl/awss_reset/*.c")
+    src += Glob("iotkit-embedded/src/dev_bind/impl/os/*.c")
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_bind']
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_bind/awss_reset']
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_bind/os']
+#### device bind ####
+
+
+#
+# device model
+#
+if GetDepend(['DEVICE_MODEL_ENABLED']):
+    src += Split("""
+    iotkit-embedded/src/dev_model/client/dm_client.c
+    iotkit-embedded/src/dev_model/client/dm_client_adapter.c
+    iotkit-embedded/src/dev_model/dm_api.c
+    iotkit-embedded/src/dev_model/dm_cota.c
+    iotkit-embedded/src/dev_model/dm_fota.c
+    iotkit-embedded/src/dev_model/dm_ipc.c
+    iotkit-embedded/src/dev_model/dm_manager.c
+    iotkit-embedded/src/dev_model/dm_message_cache.c
+    iotkit-embedded/src/dev_model/dm_message.c
+    iotkit-embedded/src/dev_model/dm_opt.c
+    iotkit-embedded/src/dev_model/dm_ota.c
+    iotkit-embedded/src/dev_model/dm_msg_process.c
+    iotkit-embedded/src/dev_model/dm_utils.c
+    iotkit-embedded/src/dev_model/iotx_cm_mqtt.c
+    iotkit-embedded/src/dev_model/impl_linkkit.c
+    iotkit-embedded/src/dev_model/iotx_cm.c
+    """)
+
+    if GetDepend(['LOG_REPORT_TO_CLOUD']):
+        src += Split("""
+        iotkit-embedded/src/dev_model/dm_log_report.c
+        """)
+
+    # ALCS(alink local communication service) is a communication between phone and device
+    if GetDepend(['ALCS_ENABLED']):
+        src += Glob("iotkit-embedded/src/dev_model/alcs/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/alcs']
+
+    if GetDepend(['COAP_COMM_ENABLED']):
+        src += Glob("iotkit-embedded/src/dev_model/iotx_cm_coap.c")
+
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_model']
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/client']
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_model/server']
+#### device model end ####
+
+#
+# device sign
+#
+if GetDepend(['DEV_SIGN']):
+    src += Glob('iotkit-embedded/src/dev_sign/dev_sign_mqtt.c')
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_sign']
+#### device sign end ####
+
+#
+# device reset
+#
+if GetDepend(['DEV_RESET']):
+    src += Glob('iotkit-embedded/src/dev_reset/dev_reset.c')
+    CPPPATH += [cwd + '/iotkit-embedded/src/dev_reset']
+#### device reset end ####
+
+#
+# dynamic register
+#
+if GetDepend(['DYNAMIC_REGISTER']):
+    src += Glob("iotkit-embedded/src/dynamic_register/*.c")
+    CPPPATH += [cwd + '/iotkit-embedded/src/dynamic_register']
+#### dynamic register end ####
+
+#
+# http
+#
+if GetDepend(['HTTP_COMM_ENABLED']):
+    src += Glob("iotkit-embedded/src/http/*.c")
+    CPPPATH += [cwd + '/iotkit-embedded/src/http']
+#### http end ####
+
+#
+# http2
+#
+if GetDepend(['HTTP2_COMM_ENABLED']):
+    src += Glob("iotkit-embedded/src/http2/http2_api.c")
+    src += Glob("iotkit-embedded/src/http2/iotx_http2.c")
+    
+    if GetDepend(['FS_ENABLED']):
+        src += Glob("iotkit-embedded/src/http2/http2_upload_api.c")
+    CPPPATH += [cwd + '/iotkit-embedded/src/http2']
+#### http end ####
+
+#
+# ota
+#
+if GetDepend(['OTA_ENABLED']):
+    src += Split("""
+    iotkit-embedded/src/ota/iotx_ota.c
+    iotkit-embedded/src/ota/ota_fetch.c
+    iotkit-embedded/src/ota/ota_lib.c
+    """)
+    CPPPATH += [cwd + '/iotkit-embedded/src/ota']
+#### ota end ####
+
+#
+# wifi provision
+#
+if GetDepend(['WIFI_PROVISION_ENABLED']):
+    if GetDepend(['AWSS_SUPPORT_SMARTCONFIG']):
+        src += Glob("iotkit-embedded/src/wifi_provision/smartconfig/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/smartconfig']
+    if GetDepend(['AWSS_SUPPORT_SMARTCONFIG_WPS']):
+        src += Glob("iotkit-embedded/src/wifi_provision/p2p/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/p2p']
+
+    if GetDepend(['AWSS_SUPPORT_ZEROCONFIG']):
+        src += Glob("iotkit-embedded/src/wifi_provision/zero_config/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/zero_config']
+
+    if GetDepend(['AWSS_SUPPORT_AHA']):
+        src += Glob("iotkit-embedded/src/wifi_provision/phone_ap/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/phone_ap']
+    if GetDepend(['AWSS_SUPPORT_ADHA']):
+        src += Glob("iotkit-embedded/src/wifi_provision/router_ap/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/router_ap']
+
+    if GetDepend(['AWSS_SUPPORT_DEV_AP']):
+        src += Glob("iotkit-embedded/src/wifi_provision/dev_ap/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/dev_ap']
+
+    if GetDepend(['AWSS_FRAMEWORKS']):
+        src += Glob("iotkit-embedded/src/wifi_provision/frameworks/*.c")
+        src += Glob("iotkit-embedded/src/wifi_provision/frameworks/*/*.c")
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/frameworks']
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/frameworks/aplist']
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/frameworks/ieee80211']
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/frameworks/statics']
+        CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision/frameworks/utils']
+
+    CPPPATH += [cwd + '/iotkit-embedded/src/wifi_provision']
+#### wifi provision end ####
+
+#
+# wrappers | port
+#
+src += Split("""
+ports/rtthread/HAL_OS_rtthread.c
+ports/rtthread/HAL_TCP_rtthread.c
+ports/rtthread/HAL_UDP_rtthread.c
+ports/wrapper.c
+""")
+
+if GetDepend(['SUPPORT_TLS']) or GetDepend(['COAP_DTLS_SUPPORT']):
+    src += Glob('iotkit-embedded/certs/root_ca.c')
+if GetDepend(['SUPPORT_TLS']):
+    src += Glob('ports/tls/mbedtls/HAL_TLS_mbedtls.c')
+if GetDepend(['COAP_DTLS_SUPPORT']):
+    src += Glob('ports/tls/mbedtls/HAL_DTLS_mbedtls.c')
+    
+if GetDepend(['HAL_CRYPTO']):
+    src += Glob('ports/rtthread/HAL_Crypt_rtthread.c')
+
+CPPPATH += [cwd + '/iotkit-embedded/wrappers']
+#### wrappers | port end ####
+
+#
+# samples
+#
+if GetDepend(['PKG_USING_ALI_IOTKIT_DEV_MODEL_SAMPLE']):
+    src += Split("""
+    samples/dev_model/cJSON.c
+    samples/dev_model/linkkit_example_solo.c
+    """)
+    CPPPATH += [cwd + '/iotkit-embedded/samples/dev_model']
+
 if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_SAMPLE']):
-    src += Glob('samples/mqtt/mqtt-example.c')
-
-if GetDepend(['PKG_USING_ALI_IOTKIT_OTA']):
-	src += Glob('samples/ota/ota_mqtt-example.c')
+    src += Split("""
+    samples/mqtt/mqtt-example.c
+    """)
 
 if GetDepend(['PKG_USING_ALI_IOTKIT_COAP_SAMPLE']):
-	src += Glob('samples/coap/coap-example.c')
+    src += Split("""
+    samples/coap/coap_example.c
+    """)
 
-#src/cmp, need to enable CMP_ENABLED
-#src += Glob('iotkit-embedded/src/cmp/Link-CMP/src/*.c')
-#CPPPATH += [cwd + '/iotkit-embedded/src/cmp/Link-CMP']
-#CPPPATH += [cwd + '/iotkit-embedded/src/cmp/Link-CMP/inc']
+if GetDepend(['PKG_USING_ALI_IOTKIT_OTA_SAMPLE']):
+    src += Split("""
+    samples/ota/ota_mqtt-example.c
+    """)
+#### samples end ####
 
-#src/coap
-src += Glob('iotkit-embedded/src/coap/*.c')
+group = DefineGroup('ali-iotkit', src, depend = ['PKG_USING_ALI_IOTKIT'], CPPPATH = CPPPATH)
 
-#packages/iot-coap-c
-src += Glob('iotkit-embedded/src/packages/iot-coap-c/*.c')
-CPPPATH += [cwd + '/iotkit-embedded/src/packages/iot-coap-c']
-
-#src/dm
-
-#src/http, need to enable HTTP_COMM_ENABLED
-#src += Glob('iotkit-embedded/src/http/*.c')
-
-#src/import
-
-#src/log
-src += Glob('iotkit-embedded/src/log/LITE-log/*.c')
-CPPPATH += [cwd + '/iotkit-embedded/src/log/LITE-log']
-
-#src/mqtt
-if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT']):
-	src += Glob('iotkit-embedded/src/mqtt/Link-MQTT/*.c')
-	src += Glob('iotkit-embedded/src/mqtt/Link-MQTT/MQTTPacket/*.c')
-	CPPPATH += [cwd + '/iotkit-embedded/src/mqtt/Link-MQTT']
-	CPPPATH += [cwd + '/iotkit-embedded/src/mqtt/Link-MQTT/MQTTPacket']
-
-#src/ota
-if GetDepend(['PKG_USING_ALI_IOTKIT_OTA']):
-    src += Glob('iotkit-embedded/src/ota/Link-OTA/src/*.c')
-    CPPPATH += [cwd + '/iotkit-embedded/src/ota/Link-OTA']
-
-SrcRemove(src, 'iotkit-embedded/src/ota/Link-OTA/src/ota_lib.c')   # have been include by ota.c
-SrcRemove(src, 'iotkit-embedded/src/ota/Link-OTA/src/ota_mqtt.c')  # have been include by ota.c
-SrcRemove(src, 'iotkit-embedded/src/ota/Link-OTA/src/ota_coap.c')  # have been include by ota.c
-SrcRemove(src, 'iotkit-embedded/src/ota/Link-OTA/src/ota_fetch.c') # have been include by ota.c
-
-#src/cota
-#src += Glob('iotkit-embedded/src/cota/*.c')
-
-#src/fota
-#src += Glob('iotkit-embedded/src/fota/*.c')
-
-#src/packages
-src += Glob('iotkit-embedded/src/packages/LITE-utils/*.c')
-CPPPATH += [cwd + '/iotkit-embedded/src/packages/LITE-utils']
-
-SrcRemove(src, 'iotkit-embedded/src/packages/LITE-utils/lite-utils_prog.c')
-
-#src/platform
-#src/scripts
-
-#src/sdk-tests
-#src/shadow
-#src/subdev
-
-#src/system
-src += Glob('iotkit-embedded/src/system/iotkit-system/src/*.c')
-CPPPATH += [cwd + '/iotkit-embedded/src/system/iotkit-system']
-
-#src/tfs
-#src/tls
-
-#src/utils
-src += Glob('iotkit-embedded/src/utils/misc/*.c')
-src += Glob('iotkit-embedded/src/utils/digest/*.c')
-CPPPATH += [cwd + '/iotkit-embedded/src/utils/misc']
-CPPPATH += [cwd + '/iotkit-embedded/src/utils/digest']
-
-#ports
-src += Glob('ports/rtthread/*.c')
-
-if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_TLS']):
-	src += Glob('ports/ssl/mbedtls/*.c')
-
-#src/sdk-impl
-CPPPATH += [cwd + '/iotkit-embedded/src/sdk-impl']
-CPPPATH += [cwd + '/iotkit-embedded/src/sdk-impl/exports']
-CPPPATH += [cwd + '/iotkit-embedded/src/sdk-impl/imports']
-
-if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT']):
-	CPPDEFINES += ['MQTT_COMM_ENABLED']
-	if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_DIRECT']):
-		CPPDEFINES += ['MQTT_DIRECT']
-	if not GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_TLS']):
-		CPPDEFINES += ['IOTX_WITHOUT_TLS']
-
-if GetDepend(['PKG_USING_ALI_IOTKIT_COAP']):
-	CPPDEFINES += ['COAP_COMM_ENABLED']
-	if GetDepend(['PKG_USING_ALI_IOTKIT_COAP_DTLS']):
-		CPPDEFINES += ['COAP_DTLS_SUPPORT']
-
-# OTA_SIGNAL_CHANNEL: 1-mqtt; 2:coap; 4:http
-if GetDepend(['PKG_USING_ALI_IOTKIT_MQTT_OTA']):
-	CPPDEFINES += ['SERVICE_OTA_ENABLED', 'OTA_SIGNAL_CHANNEL=1']
-
-if GetDepend(['PKG_USING_ALI_IOTKIT_COAP_OTA']):
-	CPPDEFINES += ['SERVICE_OTA_ENABLED', 'OTA_SIGNAL_CHANNEL=2']
-
-CPPDEFINES += ['IOTX_NET_INIT_WITH_PK_EXT', '_PLATFORM_IS_RTTHREAD_', 'IOTX_WITHOUT_ITLS']
-
-if rtconfig.CROSS_TOOL == 'gcc' :
-	CPPDEFINES += ['IOTX_PRJ_VERSION=\\"V2.10\\"']
-
-group = DefineGroup('ali-iotkit', src, depend = ['PKG_USING_ALI_IOTKIT'], CPPPATH = CPPPATH, LOCAL_CCFLAGS = LOCAL_CCFLAGS, CPPDEFINES = CPPDEFINES)
 Return('group')

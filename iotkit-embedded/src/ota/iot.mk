@@ -1,6 +1,13 @@
-LIBA_TARGET         := libiot_ota.a
-LIB_SRCS_PATTERN    := Link-OTA/src/ota.c
-HDR_REFS            := src
+LIBA_TARGET     := libiot_ota.a
 
-PKG_SOURCE      := Link-OTA.git
-PKG_UPSTREAM    := git@gitlab.alibaba-inc.com:iot-middleware/Link-OTA.git
+HDR_REFS        := src/infra
+
+DEPENDS         += wrappers
+LDFLAGS         += -liot_sdk -liot_hal -liot_tls
+
+LIB_SRCS_PATTERN := *.c
+
+LIB_SRCS_EXCLUDE        += examples/ota_example_mqtt.c
+SRCS_ota-example-mqtt   := examples/ota_example_mqtt.c
+
+$(call Append_Conditional, TARGET, ota-example-mqtt, OTA_ENABLED, BUILD_AOS NO_EXECUTABLES)

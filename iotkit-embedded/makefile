@@ -1,34 +1,37 @@
-include project.mk
+include tools/project.mk
 include make.settings
-include src/configs/default_settings.mk
-include src/scripts/parse_make_settings.mk
+include tools/default_settings.mk
+include tools/parse_make_settings.mk
+include $(RULE_DIR)/funcs.mk
 
-# CFLAGS  += -DTEST_MQTT_DAILY
-# CFLAGS  += -DTEST_HTTP_DAILY
-# CFLAGS  += -DTEST_COAP_DAILY
-# CFLAGS  += -DTEST_OTA_PRE
 # CFLAGS  += -DINSPECT_MQTT_FLOW
-
-include src/scripts/mock_build_options.mk
 
 COMP_LIB            := libiot_sdk.a
 COMP_LIB_COMPONENTS := \
-    src/utils \
-    src/log \
-    src/system \
+    src/infra \
+    src/dev_sign \
 
-$(call CompLib_Map, MQTT_COMM_ENABLED, \
-    src/mqtt \
-)
-$(call CompLib_Map, OTA_ENABLED, src/ota)
-$(call CompLib_Map, MQTT_SHADOW, src/shadow)
-$(call CompLib_Map, COAP_COMM_ENABLED, src/coap)
-$(call CompLib_Map, MQTT_ID2_AUTH, src/tfs)
-$(call CompLib_Map, HTTP_COMM_ENABLED, src/http)
-$(call CompLib_Map, SUBDEVICE_ENABLED, src/subdev)
-$(call CompLib_Map, CLOUD_CONN_ENABLED, src/cloud_conn)
-$(call CompLib_Map, CMP_ENABLED, src/cmp)
-$(call CompLib_Map, DM_ENABLED, src/dm)
-$(call CompLib_Map, SERVICE_OTA_ENABLED, src/fota)
-$(call CompLib_Map, SERVICE_OTA_ENABLED, src/cota)
+$(call CompLib_Map, FEATURE_MQTT_COMM_ENABLED, src/mqtt)
+$(call CompLib_Map, FEATURE_COAP_CLIENT, src/coap)
+$(call CompLib_Map, FEATURE_COAP_SERVER, src/coap)
+$(call CompLib_Map, FEATURE_SUPPORT_TLS, certs)
+$(call CompLib_Map, FEATURE_COAP_DTLS_SUPPORT, certs)
+$(call CompLib_Map, FEATURE_DYNAMIC_REGISTER, src/dynamic_register)
+$(call CompLib_Map, FEATURE_ATM_ENABLED, src/atm)
+$(call CompLib_Map, FEATURE_DEV_RESET, src/dev_reset)
+$(call CompLib_Map, FEATURE_OTA_ENABLED, src/ota)
+$(call CompLib_Map, FEATURE_DEVICE_MODEL_ENABLED, src/dev_model)
+$(call CompLib_Map, FEATURE_HTTP_COMM_ENABLED, src/http)
+$(call CompLib_Map, FEATURE_DEV_BIND_ENABLED, src/dev_bind)
+$(call CompLib_Map, FEATURE_WIFI_PROVISION_ENABLED, src/wifi_provision)
+$(call CompLib_Map, FEATURE_HTTP2_COMM_ENABLED, src/http2)
+
+SUBDIRS                 += wrappers
+SUBDIRS                 += external_libs/mbedtls
+SUBDIRS                 += tests
+
+$(call Append_Conditional, SUBDIRS, external_libs/nghttp2, HTTP2_COMM_ENABLED)
+
 include $(RULE_DIR)/rules.mk
+include tools/mock_build_options.mk
+

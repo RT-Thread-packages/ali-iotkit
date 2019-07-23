@@ -1,5 +1,3 @@
-*.so
-*.exe
 .settings/
 *.cproject
 *.project
@@ -20,9 +18,15 @@ ltmain.sh
 .config
 output/
 ota.bin
+src/packages/*.git/hooks/*.sample
 vs_build/
 .vs/
-html/
+doc/html/
 compile.log
 CMakeLists.txt.user
 qt_build/
+.vscode/
+GPATH
+GRTAGS
+GTAGS
+iotx-sdk-c-test/

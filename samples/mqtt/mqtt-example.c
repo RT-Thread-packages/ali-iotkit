@@ -1,83 +1,28 @@
 /*
- * Copyright (c) 2006-2018 RT-Thread Development Team. All rights reserved.
- * License-Identifier: Apache-2.0
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * Copyright (C) 2015-2018 Alibaba Group Holding Limited
+ * 
+ * Again edit by rt-thread group
+ * Change Logs:
+ * Date          Author          Notes
+ * 2019-07-21    MurphyZhao      first edit
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
-#include "iot_import.h"
-#include "iot_export.h"
-
 #include "rtthread.h"
+#include "dev_sign_api.h"
+#include "mqtt_api.h"
 
-#if defined(MQTT_ID2_AUTH) && defined(ON_DAILY)
-    #define PRODUCT_KEY             "9rx2yMNV5l0"
-    #define DEVICE_NAME             "sh_online_sample_mqtt"
-    #define DEVICE_SECRET           "v9mqGzepKEphLhXmAoiaUIR2HZ7XwTky"
-#elif defined(ON_DAILY)
-    #define PRODUCT_KEY             "gsYfsxQJgeD"
-    #define DEVICE_NAME             "DailyEnvDN"
-    #define DEVICE_SECRET           "y1vzFkEgcuXnvkAfm627pwarx4HRNikX"
-#elif defined(MQTT_ID2_AUTH)
-    #define PRODUCT_KEY             "micKUvuzOps"
-    #define DEVICE_NAME             "00AAAAAABBBBBB4B645F5800"
-    #define DEVICE_SECRET           "v9mqGzepKEphLhXmAoiaUIR2HZ7XwTky"
-#else
-#ifdef PKG_USING_ALI_IOTKIT_PRODUCT_KEY
-    #define PRODUCT_KEY             PKG_USING_ALI_IOTKIT_PRODUCT_KEY
-#else
-    #define PRODUCT_KEY             "yfTuLfBJTiL"
-#endif
+char DEMO_PRODUCT_KEY[IOTX_PRODUCT_KEY_LEN + 1] = {0};
+char DEMO_DEVICE_NAME[IOTX_DEVICE_NAME_LEN + 1] = {0};
+char DEMO_DEVICE_SECRET[IOTX_DEVICE_SECRET_LEN + 1] = {0};
 
-#ifdef PKG_USING_ALI_IOTKIT_DEVICE_NAME
-    #define DEVICE_NAME             PKG_USING_ALI_IOTKIT_DEVICE_NAME
-#else
-    #define DEVICE_NAME             "TestDeviceForDemo"
-#endif
-
-#ifdef PKG_USING_ALI_IOTKIT_DEVICE_SECRET
-    #define DEVICE_SECRET           PKG_USING_ALI_IOTKIT_DEVICE_SECRET
-#else
-    #define DEVICE_SECRET           "fSCl9Ns5YPnYN8Ocg0VEel1kXFnRlV6c"
-#endif
-#endif
-
-#ifdef PKG_USING_ALI_IOTKIT_IS_LINKDEVELOP
-/* ALINK TSL Device attribute report */
-#define ALINK_PROPERTY_POST_PUB          "/sys/"PRODUCT_KEY"/"DEVICE_NAME"/thing/event/property/post"        
-#define ALINK_PROPERTY_POST_REPLY_SUB    "/sys/"PRODUCT_KEY"/"DEVICE_NAME"/thing/event/property/post_reply"
-#define ALINK_PROPERTY_SET_REPLY_SUB     "/sys/"PRODUCT_KEY"/"DEVICE_NAME"/thing/event/property/set_reply"
-#define ALINK_SERVICE_SET_SUB            "/sys/"PRODUCT_KEY"/"DEVICE_NAME"/thing/service/property/set"
-#else
-#define TOPIC_UPDATE                     "/"PRODUCT_KEY"/"DEVICE_NAME"/update"
-#define TOPIC_ERROR                      "/"PRODUCT_KEY"/"DEVICE_NAME"/update/error"
-#define TOPIC_GET                        "/"PRODUCT_KEY"/"DEVICE_NAME"/get"
-#define TOPIC_DATA                       "/"PRODUCT_KEY"/"DEVICE_NAME"/data"
-#endif
-
-/* These are pre-defined topics format*/
-#define TOPIC_UPDATE_FMT                 "/%s/%s/update"
-#define TOPIC_ERROR_FMT                  "/%s/%s/update/error"
-#define TOPIC_GET_FMT                    "/%s/%s/get"
-#define TOPIC_DATA_FMT                   "/%s/%s/data"
-
-#define MQTT_MSGLEN                      (1024)
+void *HAL_Malloc(uint32_t size);
+void HAL_Free(void *ptr);
+void HAL_Printf(const char *fmt, ...);
+int HAL_GetProductKey(char product_key[IOTX_PRODUCT_KEY_LEN + 1]);
+int HAL_GetDeviceName(char device_name[IOTX_DEVICE_NAME_LEN + 1]);
+int HAL_GetDeviceSecret(char device_secret[IOTX_DEVICE_SECRET_LEN]);
+uint64_t HAL_UptimeMs(void);
+int HAL_Snprintf(char *str, const int len, const char *fmt, ...);
 
 #define EXAMPLE_TRACE(fmt, ...)  \
     do { \
@@ -86,594 +31,232 @@
         HAL_Printf("%s", "\r\n"); \
     } while(0)
 
-static char __product_key[PRODUCT_KEY_LEN + 1];
-static char __device_name[DEVICE_NAME_LEN + 1];
-static char __device_secret[DEVICE_SECRET_LEN + 1];
-
-static int     user_argc;
-static char   *user_param = NULL;
-
-static void   *pclient;
-
-static uint8_t is_running = 0;
-
-static char* rt_strlwr(char *str)
- {
-    if(str == NULL)
-        return NULL;
-         
-    char *p = str;
-    while (*p != '\0')
-    {
-        if(*p >= 'A' && *p <= 'Z')
-            *p = (*p) + 0x20;
-        p++;
-    }
-    return str;
-}
-
-static void event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
+static void example_message_arrive(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
 {
-    iotx_mqtt_topic_info_pt topic_info = (iotx_mqtt_topic_info_pt)msg->msg;
-    uintptr_t packet_id = (uintptr_t)(msg->msg);
-
-    if (topic_info == NULL)
-    {
-        rt_kprintf("Topic info is null! Exit.");
-        return;
-    }
+    iotx_mqtt_topic_info_t     *topic_info = (iotx_mqtt_topic_info_pt) msg->msg;
 
     switch (msg->event_type) {
-        case IOTX_MQTT_EVENT_UNDEF:
-            EXAMPLE_TRACE("undefined event occur.");
+        case IOTX_MQTT_EVENT_PUBLISH_RECEIVED:
+            /* print topic name and topic message */
+            EXAMPLE_TRACE("Message Arrived:");
+            EXAMPLE_TRACE("Topic  : %.*s", topic_info->topic_len, topic_info->ptopic);
+            EXAMPLE_TRACE("Payload: %.*s", topic_info->payload_len, topic_info->payload);
+            EXAMPLE_TRACE("\n");
             break;
-
-        case IOTX_MQTT_EVENT_DISCONNECT:
-            EXAMPLE_TRACE("MQTT disconnect.");
-            break;
-
-        case IOTX_MQTT_EVENT_RECONNECT:
-            EXAMPLE_TRACE("MQTT reconnect.");
-            break;
-
-        case IOTX_MQTT_EVENT_SUBCRIBE_SUCCESS:
-            EXAMPLE_TRACE("subscribe success, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_SUBCRIBE_TIMEOUT:
-            EXAMPLE_TRACE("subscribe wait ack timeout, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_SUBCRIBE_NACK:
-            EXAMPLE_TRACE("subscribe nack, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_UNSUBCRIBE_SUCCESS:
-            EXAMPLE_TRACE("unsubscribe success, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_UNSUBCRIBE_TIMEOUT:
-            EXAMPLE_TRACE("unsubscribe timeout, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_UNSUBCRIBE_NACK:
-            EXAMPLE_TRACE("unsubscribe nack, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_PUBLISH_SUCCESS:
-            EXAMPLE_TRACE("publish success, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_PUBLISH_TIMEOUT:
-            EXAMPLE_TRACE("publish timeout, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_PUBLISH_NACK:
-            EXAMPLE_TRACE("publish nack, packet-id=%u", (unsigned int)packet_id);
-            break;
-
-        case IOTX_MQTT_EVENT_PUBLISH_RECVEIVED:
-            EXAMPLE_TRACE("topic message arrived but without any related handle: topic=%.*s, topic_msg=%.*s",
-                          topic_info->topic_len,
-                          topic_info->ptopic,
-                          topic_info->payload_len,
-                          topic_info->payload);
-            break;
-
-        case IOTX_MQTT_EVENT_BUFFER_OVERFLOW:
-            EXAMPLE_TRACE("buffer overflow, %s", msg->msg);
-            break;
-
         default:
-            EXAMPLE_TRACE("Should NOT arrive here.");
             break;
     }
 }
 
-static void _demo_message_arrive(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
+static int example_subscribe(void *handle)
 {
-    iotx_mqtt_topic_info_pt ptopic_info = (iotx_mqtt_topic_info_pt) msg->msg;
+    int res = 0;
+    const char *fmt = "/%s/%s/user/get";
+    char *topic = NULL;
+    int topic_len = 0;
 
-    /* print topic name and topic message */
-    EXAMPLE_TRACE("----");
-    EXAMPLE_TRACE("packetId: %d", ptopic_info->packet_id);
-    EXAMPLE_TRACE("Topic: '%.*s' (Length: %d)",
-                  ptopic_info->topic_len,
-                  ptopic_info->ptopic,
-                  ptopic_info->topic_len);
-    EXAMPLE_TRACE("Payload: '%.*s' (Length: %d)",
-                  ptopic_info->payload_len,
-                  ptopic_info->payload,
-                  ptopic_info->payload_len);
-    EXAMPLE_TRACE("----");
+    topic_len = strlen(fmt) + strlen(DEMO_PRODUCT_KEY) + strlen(DEMO_DEVICE_NAME) + 1;
+    topic = HAL_Malloc(topic_len);
+    if (topic == NULL) {
+        EXAMPLE_TRACE("memory not enough");
+        return -1;
+    }
+    memset(topic, 0, topic_len);
+    HAL_Snprintf(topic, topic_len, fmt, DEMO_PRODUCT_KEY, DEMO_DEVICE_NAME);
+
+    res = IOT_MQTT_Subscribe(handle, topic, IOTX_MQTT_QOS0, example_message_arrive, NULL);
+    if (res < 0) {
+        EXAMPLE_TRACE("subscribe failed");
+        HAL_Free(topic);
+        return -1;
+    }
+
+    HAL_Free(topic);
+    return 0;
 }
 
-#ifndef MQTT_ID2_AUTH
-static void mqtt_client(void)
+static int example_publish(void *handle)
 {
-    int rc = 0;
+    int             res = 0;
+    const char     *fmt = "/%s/%s/user/get";
+    char           *topic = NULL;
+    int             topic_len = 0;
+    char           *payload = "{\"message\":\"hello!\"}";
 
-    iotx_conn_info_pt pconn_info;
-    iotx_mqtt_param_t mqtt_params;
-    
-    char *msg_buf = NULL, *msg_readbuf = NULL;
+    topic_len = strlen(fmt) + strlen(DEMO_PRODUCT_KEY) + strlen(DEMO_DEVICE_NAME) + 1;
+    topic = HAL_Malloc(topic_len);
+    if (topic == NULL) {
+        EXAMPLE_TRACE("memory not enough");
+        return -1;
+    }
+    memset(topic, 0, topic_len);
+    HAL_Snprintf(topic, topic_len, fmt, DEMO_PRODUCT_KEY, DEMO_DEVICE_NAME);
 
-    IOT_OpenLog("mqtt");
-    IOT_SetLogLevel(IOT_LOG_DEBUG);    
-
-    if (NULL == (msg_buf = (char *)HAL_Malloc(MQTT_MSGLEN))) {
-        EXAMPLE_TRACE("not enough memory");
-        rc = -1;
-        goto do_exit;
+    res = IOT_MQTT_Publish_Simple(0, topic, IOTX_MQTT_QOS0, payload, strlen(payload));
+    if (res < 0) {
+        EXAMPLE_TRACE("publish failed, res = %d", res);
+        HAL_Free(topic);
+        return -1;
     }
 
-    if (NULL == (msg_readbuf = (char *)HAL_Malloc(MQTT_MSGLEN))) {
-        EXAMPLE_TRACE("not enough memory");
-        rc = -1;
-        goto do_exit;
-    }
+    HAL_Free(topic);
+    return 0;
+}
 
-    HAL_GetProductKey(__product_key);
-    HAL_GetDeviceName(__device_name);
-    HAL_GetDeviceSecret(__device_secret);
+static void example_event_handle(void *pcontext, void *pclient, iotx_mqtt_event_msg_pt msg)
+{
+    EXAMPLE_TRACE("msg->event_type : %d", msg->event_type);
+}
 
-    /* Device AUTH */
-    if (0 != IOT_SetupConnInfo(__product_key, __device_name, __device_secret, (void **)&pconn_info)) {
-        EXAMPLE_TRACE("AUTH request failed!");
-        rc = -1;
-        goto do_exit;
-    }
+/*
+ *  NOTE: About demo topic of /${productKey}/${deviceName}/user/get
+ *
+ *  The demo device has been configured in IoT console (https://iot.console.aliyun.com)
+ *  so that its /${productKey}/${deviceName}/user/get can both be subscribed and published
+ *
+ *  We design this to completely demonstrate publish & subscribe process, in this way
+ *  MQTT client can receive original packet sent by itself
+ *
+ *  For new devices created by yourself, pub/sub privilege also requires being granted
+ *  to its /${productKey}/${deviceName}/user/get for successfully running whole example
+ */
+
+static int mqtt_example_main(int argc, char *argv[])
+{
+    void                   *pclient = NULL;
+    int                     res = 0;
+    int                     loop_cnt = 0;
+    iotx_mqtt_param_t       mqtt_params;
+
+    HAL_GetProductKey(DEMO_PRODUCT_KEY);
+    HAL_GetDeviceName(DEMO_DEVICE_NAME);
+    HAL_GetDeviceSecret(DEMO_DEVICE_SECRET);
+
+    EXAMPLE_TRACE("mqtt example");
 
     /* Initialize MQTT parameter */
+    /*
+     * Note:
+     *
+     * If you did NOT set value for members of mqtt_params, SDK will use their default values
+     * If you wish to customize some parameter, just un-comment value assigning expressions below
+     *
+     **/
     memset(&mqtt_params, 0x0, sizeof(mqtt_params));
 
-    mqtt_params.port = pconn_info->port;
-    mqtt_params.host = pconn_info->host_name;
-    mqtt_params.client_id = pconn_info->client_id;
-    mqtt_params.username = pconn_info->username;
-    mqtt_params.password = pconn_info->password;
-    mqtt_params.pub_key = pconn_info->pub_key;
+    /**
+     *
+     *  MQTT connect hostname string
+     *
+     *  MQTT server's hostname can be customized here
+     *
+     *  default value is ${productKey}.iot-as-mqtt.cn-shanghai.aliyuncs.com
+     */
+    /* mqtt_params.host = "something.iot-as-mqtt.cn-shanghai.aliyuncs.com"; */
 
-    mqtt_params.request_timeout_ms = 2000;
-    mqtt_params.clean_session = 0;
-    mqtt_params.keepalive_interval_ms = 60000;
-    mqtt_params.pread_buf = msg_readbuf;
-    mqtt_params.read_buf_size = MQTT_MSGLEN;
-    mqtt_params.pwrite_buf = msg_buf;
-    mqtt_params.write_buf_size = MQTT_MSGLEN;
+    /**
+     *
+     *  MQTT connect port number
+     *
+     *  TCP/TLS port which can be 443 or 1883 or 80 or etc, you can customize it here
+     *
+     *  default value is 1883 in TCP case, and 443 in TLS case
+     */
+    /* mqtt_params.port = 1883; */
 
-    mqtt_params.handle_event.h_fp = event_handle;
-    mqtt_params.handle_event.pcontext = NULL;
+    /**
+     *
+     * MQTT request timeout interval
+     *
+     * MQTT message request timeout for waiting ACK in MQTT Protocol
+     *
+     * default value is 2000ms.
+     */
+    /* mqtt_params.request_timeout_ms = 2000; */
 
-    /* Convert uppercase letters in host to lowercase */
-	rt_kprintf("host: %s\r\n", rt_strlwr((char*)mqtt_params.host));
+    /**
+     *
+     * MQTT clean session flag
+     *
+     * If CleanSession is set to 0, the Server MUST resume communications with the Client based on state from
+     * the current Session (as identified by the Client identifier).
+     *
+     * If CleanSession is set to 1, the Client and Server MUST discard any previous Session and Start a new one.
+     *
+     * default value is 0.
+     */
+    /* mqtt_params.clean_session = 0; */
 
-    /* Construct a MQTT client with specify parameter */
+    /**
+     *
+     * MQTT keepAlive interval
+     *
+     * KeepAlive is the maximum time interval that is permitted to elapse between the point at which
+     * the Client finishes transmitting one Control Packet and the point it starts sending the next.
+     *
+     * default value is 60000.
+     */
+    /* mqtt_params.keepalive_interval_ms = 60000; */
+
+    /**
+     *
+     * MQTT write buffer size
+     *
+     * Write buffer is allocated to place upstream MQTT messages, MQTT client will be limitted
+     * to send packet no longer than this to Cloud
+     *
+     * default value is 1024.
+     *
+     */
+    /* mqtt_params.write_buf_size = 1024; */
+
+    /**
+     *
+     * MQTT read buffer size
+     *
+     * Write buffer is allocated to place downstream MQTT messages, MQTT client will be limitted
+     * to recv packet no longer than this from Cloud
+     *
+     * default value is 1024.
+     *
+     */
+    /* mqtt_params.read_buf_size = 1024; */
+
+    /**
+     *
+     * MQTT event callback function
+     *
+     * Event callback function will be called by SDK when it want to notify user what is happening inside itself
+     *
+     * default value is NULL, which means PUB/SUB event won't be exposed.
+     *
+     */
+    mqtt_params.handle_event.h_fp = example_event_handle;
+
     pclient = IOT_MQTT_Construct(&mqtt_params);
     if (NULL == pclient) {
         EXAMPLE_TRACE("MQTT construct failed");
-        rc = -1;
-        goto do_exit;
+        return -1;
     }
 
-#ifdef PKG_USING_ALI_IOTKIT_IS_LINKDEVELOP
-    /* Subscribe the specific topic */
-    rc = IOT_MQTT_Subscribe(pclient, ALINK_SERVICE_SET_SUB, IOTX_MQTT_QOS1, _demo_message_arrive, NULL);
-#else
-    rc = IOT_MQTT_Subscribe(pclient, TOPIC_DATA, IOTX_MQTT_QOS1, _demo_message_arrive, NULL);
-#endif
-
-    if (rc < 0) {
+    res = example_subscribe(pclient);
+    if (res < 0) {
         IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("IOT_MQTT_Subscribe() failed, rc = %d", rc);
-        rc = -1;
-        goto do_exit;
+        return -1;
     }
 
-#ifdef PKG_USING_ALI_IOTKIT_IS_LINKDEVELOP
-    /* Subscribe the specific topic */
-    rc = IOT_MQTT_Subscribe(pclient, ALINK_PROPERTY_POST_REPLY_SUB, IOTX_MQTT_QOS1, _demo_message_arrive, NULL);
-    if (rc < 0) {
-        IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("IOT_MQTT_Subscribe() failed, rc = %d", rc);
-        rc = -1;
-        goto do_exit;
-    }
-#endif
+    while (1) {
+        if (0 == loop_cnt % 20) {
+            example_publish(pclient);
+        }
 
-    IOT_MQTT_Yield(pclient, 200);
-
-    do {
-        /* handle the MQTT packet received from TCP or SSL connection */
         IOT_MQTT_Yield(pclient, 200);
 
-        HAL_SleepMs(2000);
-
-    } while (is_running);
-
-    IOT_MQTT_Yield(pclient, 200);
-
-#ifdef PKG_USING_ALI_IOTKIT_IS_LINKDEVELOP
-    IOT_MQTT_Unsubscribe(pclient, ALINK_PROPERTY_POST_REPLY_SUB);
-    IOT_MQTT_Unsubscribe(pclient, ALINK_SERVICE_SET_SUB);
-#else
-    IOT_MQTT_Unsubscribe(pclient, TOPIC_DATA);
-#endif
-
-    IOT_MQTT_Yield(pclient, 200);
-
-    IOT_MQTT_Destroy(&pclient);
-
-do_exit:
-    if (NULL != msg_buf) {
-        HAL_Free(msg_buf);
+        loop_cnt += 1;
     }
-
-    if (NULL != msg_readbuf) {
-        HAL_Free(msg_readbuf);
-    }
-
-    if (NULL != user_param)
-        HAL_Free(user_param);
-    user_param = NULL;
-
-    IOT_DumpMemoryStats(IOT_LOG_DEBUG);
-    IOT_CloseLog();
-
-    is_running = 0;
-
-    EXAMPLE_TRACE("out of sample!");
-}
-#endif /* MQTT_ID2_AUTH */
-
-#ifdef MQTT_ID2_AUTH
-#include "tfs.h"
-static char __device_id2[TFS_ID2_LEN + 1];
-static void mqtt_client_secure()
-{
-    int rc = 0, msg_len, cnt = 0;
-    void *pclient;
-    iotx_conn_info_pt pconn_info;
-    iotx_mqtt_param_t mqtt_params;
-    iotx_mqtt_topic_info_t topic_msg;
-    char msg_pub[128];
-    char *msg_buf = NULL, *msg_readbuf = NULL;
-    char  topic_update[IOTX_URI_MAX_LEN] = {0};
-    char  topic_error[IOTX_URI_MAX_LEN] = {0};
-    char  topic_get[IOTX_URI_MAX_LEN] = {0};
-    char  topic_data[IOTX_URI_MAX_LEN] = {0};
-
-    IOT_OpenLog("mqtt");
-    IOT_SetLogLevel(IOT_LOG_DEBUG);    
-
-    if (NULL == (msg_buf = (char *)HAL_Malloc(MQTT_MSGLEN))) {
-        EXAMPLE_TRACE("not enough memory");
-        rc = -1;
-        goto do_exit;
-    }
-
-    if (NULL == (msg_readbuf = (char *)HAL_Malloc(MQTT_MSGLEN))) {
-        EXAMPLE_TRACE("not enough memory");
-        rc = -1;
-        goto do_exit;
-    }
-
-    HAL_GetProductKey(__product_key);
-    HAL_GetID2(__device_id2);
-
-    /* Device AUTH */
-    rc = IOT_SetupConnInfoSecure(__product_key, __device_id2, __device_id2, (void **)&pconn_info);
-    if (rc != 0) {
-        EXAMPLE_TRACE("AUTH request failed!");
-        goto do_exit;
-    }
-
-    HAL_Snprintf(topic_update,IOTX_URI_MAX_LEN,TOPIC_UPDATE_FMT,__product_key,__device_id2);
-    HAL_Snprintf(topic_error,IOTX_URI_MAX_LEN,TOPIC_ERROR_FMT,__product_key,__device_id2);
-    HAL_Snprintf(topic_get,IOTX_URI_MAX_LEN,TOPIC_GET_FMT,__product_key,__device_id2);
-    HAL_Snprintf(topic_data,IOTX_URI_MAX_LEN,TOPIC_DATA_FMT,__product_key,__device_id2);
-
-    /* Initialize MQTT parameter */
-    memset(&mqtt_params, 0x0, sizeof(mqtt_params));
-
-    mqtt_params.port = pconn_info->port;
-    mqtt_params.host = pconn_info->host_name;
-    mqtt_params.client_id = pconn_info->client_id;
-    mqtt_params.username = pconn_info->username;
-    mqtt_params.password = pconn_info->password;
-    mqtt_params.pub_key = pconn_info->pub_key;
-
-    mqtt_params.request_timeout_ms = 2000;
-    mqtt_params.clean_session = 0;
-    mqtt_params.keepalive_interval_ms = 60000;
-    mqtt_params.pread_buf = msg_readbuf;
-    mqtt_params.read_buf_size = MQTT_MSGLEN;
-    mqtt_params.pwrite_buf = msg_buf;
-    mqtt_params.write_buf_size = MQTT_MSGLEN;
-
-    mqtt_params.handle_event.h_fp = event_handle;
-    mqtt_params.handle_event.pcontext = NULL;
-
-    /* Construct a MQTT client with specify parameter */
-    pclient = IOT_MQTT_ConstructSecure(&mqtt_params);
-    if (NULL == pclient) {
-        EXAMPLE_TRACE("MQTT construct failed");
-        rc = -1;
-        goto do_exit;
-    }
-
-    /* Subscribe the specific topic */
-    rc = IOT_MQTT_Subscribe(pclient, topic_data, IOTX_MQTT_QOS1, _demo_message_arrive, NULL);
-    if (rc < 0) {
-        IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("IOT_MQTT_Subscribe() failed, rc = %d", rc);
-        rc = -1;
-        goto do_exit;
-    }
-
-    HAL_SleepMs(1000);
-
-    /* Initialize topic information */
-    memset(&topic_msg, 0x0, sizeof(iotx_mqtt_topic_info_t));
-    strcpy(msg_pub, "message: hello! start!");
-
-    topic_msg.qos = IOTX_MQTT_QOS1;
-    topic_msg.retain = 0;
-    topic_msg.dup = 0;
-    topic_msg.payload = (void *)msg_pub;
-    topic_msg.payload_len = strlen(msg_pub);
-
-    rc = IOT_MQTT_Publish(pclient, topic_data, &topic_msg);
-    EXAMPLE_TRACE("rc = IOT_MQTT_Publish() = %d", rc);
-
-    do {
-        /* Generate topic message */
-        cnt++;
-        msg_len = snprintf(msg_pub, sizeof(msg_pub), "{\"attr_name\":\"temperature\", \"attr_value\":\"%d\"}", cnt);
-        if (msg_len < 0) {
-            EXAMPLE_TRACE("Error occur! Exit program");
-            rc = -1;
-            break;
-        }
-
-        topic_msg.payload = (void *)msg_pub;
-        topic_msg.payload_len = msg_len;
-
-        rc = IOT_MQTT_Publish(pclient, topic_data, &topic_msg);
-        if (rc < 0) {
-            EXAMPLE_TRACE("error occur when publish");
-            rc = -1;
-            break;
-        }
-        EXAMPLE_TRACE("packet-id=%u, publish topic msg='0x%02x%02x%02x%02x'...",
-                      (uint32_t)rc,
-                      msg_pub[0], msg_pub[1], msg_pub[2], msg_pub[3]
-                     );
-
-        /* handle the MQTT packet received from TCP or SSL connection */
-        IOT_MQTT_Yield(pclient, 200);
-
-        /* infinite loop if running with 'loop' argument */
-        if (user_argc >= 2 && user_param && !strcmp("loop", user_param)) {
-            HAL_SleepMs(2000);
-            cnt = 0;
-        }
-
-    } while (cnt < 1);
-
-    IOT_MQTT_Unsubscribe(pclient, TOPIC_DATA);
-
-    HAL_SleepMs(200);
-
-    IOT_MQTT_Destroy(&pclient);
-
-do_exit:
-    if (NULL != msg_buf) {
-        HAL_Free(msg_buf);
-    }
-
-    if (NULL != msg_readbuf) {
-        HAL_Free(msg_readbuf);
-    }
-    if (NULL != user_param)
-        HAL_Free(user_param);
-    user_param = NULL;
-
-    IOT_DumpMemoryStats(IOT_LOG_DEBUG);
-    IOT_CloseLog();
-
-    EXAMPLE_TRACE("out of sample!");
-}
-#endif /* MQTT_ID2_AUTH*/
-
-static int ali_mqtt_test_pub(void)
-{
-    int rc = 0;
-    static uint16_t pub_msg_cnt = 0;
-    uint8_t rgb_switch = 0, rand_num_r = 0, rand_num_g = 0, rand_num_b = 0;
-
-    char   msg_pub[512];
-    iotx_mqtt_topic_info_t topic_msg;
-
-    if (!is_running)
-    {
-        HAL_Printf("MQTT test is not running! Please start MQTT first by using the \"ali_mqtt_test start\" command");
-        return 0;
-    }
-
-    if (user_param && !strcmp("open", user_param))
-    {
-        rgb_switch = 1;
-    }
-    else if (user_param && !strcmp("close", user_param))
-    {
-        rgb_switch = 0;
-    }
-    else
-    {
-        return 0;
-    }
-
-    srand((int)(rt_tick_get()) / (pub_msg_cnt + 1));
-    rand_num_r = (uint8_t)(rand()%255);
-
-    srand((int)(rt_tick_get()) / (pub_msg_cnt + 2));
-    rand_num_g = (uint8_t)(rand()%255);
-
-    srand((int)(rt_tick_get()) / (pub_msg_cnt + 3));
-    rand_num_b = (uint8_t)(rand()%255);
-
-    /* Initialize topic information */
-    memset(msg_pub, 0x0, sizeof(msg_pub));
-
-    snprintf(msg_pub, sizeof(msg_pub), 
-            "{\"id\" : \"%d\",\"version\":\"1.0\",\"params\" : "
-            "{\"RGBColor\" : {\"Red\":%d,\"Green\":%d,\"Blue\":%d},"
-            "\"LightSwitch\" : %d},"
-            "\"method\":\"thing.event.property.post\"}",
-            ++pub_msg_cnt, rand_num_r, rand_num_g, rand_num_b, rgb_switch);
-
-    memset(&topic_msg, 0x0, sizeof(iotx_mqtt_topic_info_t));
-    topic_msg.qos = IOTX_MQTT_QOS1;
-    topic_msg.retain = 0;
-    topic_msg.dup = 0;
-    topic_msg.payload = (void *)msg_pub;
-    topic_msg.payload_len = strlen(msg_pub);
-
-#ifdef PKG_USING_ALI_IOTKIT_IS_LINKDEVELOP
-    rc = IOT_MQTT_Publish(pclient, ALINK_PROPERTY_POST_PUB, &topic_msg);
-    if (rc < 0) {
-        IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("error occur when publish");
-        rc = -1;
-        return rc;
-    }
-
-    EXAMPLE_TRACE("\n publish message: \n topic: %s\n payload: %s\n rc = %d", ALINK_PROPERTY_POST_PUB, topic_msg.payload, rc);
-#else
-    rc = IOT_MQTT_Publish(pclient, TOPIC_UPDATE, &topic_msg);
-    if (rc < 0) {
-        IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("error occur when publish");
-        rc = -1;
-        return rc;
-    }
-
-    EXAMPLE_TRACE("\n publish message: \n topic: %s\n payload: \%s\n rc = %d", TOPIC_UPDATE, topic_msg.payload, rc);
-
-    rc = IOT_MQTT_Publish(pclient, TOPIC_DATA, &topic_msg);
-    if (rc < 0) {
-        IOT_MQTT_Destroy(&pclient);
-        EXAMPLE_TRACE("error occur when publish");
-        rc = -1;
-        return rc;
-    }
-
-    EXAMPLE_TRACE("\n publish message: \n topic: %s\n payload: \%s\n rc = %d", TOPIC_DATA, topic_msg.payload, rc);
-#endif
-    return 0;
-}
-
-static int ali_mqtt_main(int argc, char **argv)
-{
-    rt_thread_t tid;
-
-    user_argc = argc;
-    if (2 == user_argc)
-    {
-        if (!strcmp("start", argv[1]))
-        {
-            if (1 == is_running)
-            {
-                HAL_Printf("MQTT test is already running! Please stop running first by using the \"ali_mqtt_test stop\" command\n");
-                return 0;
-            }
-            is_running = 1;
-        }
-        else if (!strcmp("stop", argv[1]))
-        {
-            if (0 == is_running)
-            {
-                HAL_Printf("MQTT test is already stopped!\n");
-                return 0;
-            }
-            is_running = 0;
-            // stop mqtt test
-            return 0;
-        }
-        else
-        {
-            HAL_Printf("Input param error! Example: ali_mqtt_test start/stop or ali_mqtt_test pub open/close\n");
-            return 0;            
-        }
-    }
-    else if(3 == user_argc)
-    {
-        if (!strcmp("pub", argv[1]))
-        {
-            user_param = (char*)rt_strdup((const char*)argv[2]);
-            HAL_Printf("param:%s\n", user_param);
-
-            // publish
-            ali_mqtt_test_pub();
-            return 0;
-        }
-        else
-        {
-            HAL_Printf("Input param error! Example: ali_mqtt_test start/stop or ali_mqtt_test pub open/close\n");
-            return 0;
-        }
-    }
-    else
-    {
-        HAL_Printf("Input param error! Example: ali_mqtt_test start/stop or ali_mqtt_test pub open/close\n");
-        return 0;
-    }
-
-#ifdef IOTX_PRJ_VERSION
-    HAL_Printf("iotkit-embedded sdk version: %s\n", IOTX_PRJ_VERSION);
-#endif
-
-    HAL_SetProductKey(PRODUCT_KEY);
-    HAL_SetDeviceName(DEVICE_NAME);
-    HAL_SetDeviceSecret(DEVICE_SECRET);
-
-#ifndef MQTT_ID2_AUTH
-    tid = rt_thread_create("ali-mqtt",
-                    (void (*)(void *))mqtt_client, NULL,
-                    6 * 1024, RT_THREAD_PRIORITY_MAX / 2 - 1, 10);
-#else
-    tid = rt_thread_create("ali-mqtt",
-                    mqtt_client_secure, NULL,
-                    6 * 1024, RT_THREAD_PRIORITY_MAX / 2 - 1, 10);                    
-#endif
-    if (tid != RT_NULL)
-            rt_thread_startup(tid);
 
     return 0;
 }
-#ifdef RT_USING_FINSH
-#include <finsh.h>
-
-MSH_CMD_EXPORT_ALIAS(ali_mqtt_main, ali_mqtt_test, Example: ali_mqtt_test start/pub [open/close]/stop);
+#ifdef FINSH_USING_MSH
+MSH_CMD_EXPORT_ALIAS(mqtt_example_main, ali_mqtt_sample, ali coap sample);
 #endif
