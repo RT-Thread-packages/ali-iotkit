@@ -114,15 +114,7 @@ int32_t HAL_TCP_Destroy(uintptr_t fd)
 {
     int rc;
 	
-#if defined(RT_USING_DFS_DEVFS) && defined(RT_USING_POSIX)
-    if ((0 <= (int)fd) && ((int)fd <= 2))
-    {
-        LOG_I("the FD of user can not less than 2 in rt-thread OS, Please see fd_get() in dfs.c.");
-        return 0;
-    }
-#endif
-
-    rc = close((int) fd);
+    rc = closesocket((int) fd);
     if (0 != rc) {
         LOG_E("closesocket error");
         return -1;
