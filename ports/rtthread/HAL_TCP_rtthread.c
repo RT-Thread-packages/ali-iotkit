@@ -113,8 +113,8 @@ uintptr_t HAL_TCP_Establish(const char *host, uint16_t port)
 int32_t HAL_TCP_Destroy(uintptr_t fd)
 {
     int rc;
-
-    rc = close((int) fd);
+	
+    rc = closesocket((int) fd);
     if (0 != rc) {
         LOG_E("closesocket error");
         return -1;
