@@ -272,7 +272,6 @@ CPPPATH += [cwd + '/iotkit-embedded/wrappers']
 #
 if GetDepend(['PKG_USING_ALI_IOTKIT_DEV_MODEL_SAMPLE']):
     src += Split("""
-    samples/dev_model/cJSON.c
     samples/dev_model/linkkit_example_solo.c
     """)
     CPPPATH += [cwd + '/iotkit-embedded/samples/dev_model']
