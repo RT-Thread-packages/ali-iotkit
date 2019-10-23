@@ -75,14 +75,16 @@ int HAL_Aes128_Cbc_Encrypt(
     int i   = 0;
     int ret = ret;
     platform_aes_t *p_aes128 = (platform_aes_t *)aes;
+    unsigned char *src_ptr = (unsigned char *)src;
+    unsigned char *dst_ptr = (unsigned char *)dst;
 
     if (!aes || !src || !dst) return -1;
 
     for (i = 0; i < blockNum; ++i) {
         ret = mbedtls_aes_crypt_cbc(&p_aes128->ctx, MBEDTLS_AES_ENCRYPT, AES_BLOCK_SIZE,
-                                    p_aes128->iv, src, dst);
-        src += 16;
-        dst += 16;
+                                    p_aes128->iv, src_ptr, dst_ptr);
+        src_ptr += 16;
+        dst_ptr += 16;
     }
 
     return ret;
@@ -98,13 +100,16 @@ int HAL_Aes128_Cbc_Decrypt(
     int ret = -1;
     platform_aes_t *p_aes128 = (platform_aes_t *)aes;
 
+    unsigned char *src_ptr = (unsigned char *)src;
+    unsigned char *dst_ptr = (unsigned char *)dst;
+
     if (!aes || !src || !dst) return ret;
 
     for (i = 0; i < blockNum; ++i) {
         ret = mbedtls_aes_crypt_cbc(&p_aes128->ctx, MBEDTLS_AES_DECRYPT, AES_BLOCK_SIZE,
-                                    p_aes128->iv, src, dst);
-        src += 16;
-        dst += 16;
+                                    p_aes128->iv, src_ptr, dst_ptr);
+        src_ptr += 16;
+        dst_ptr += 16;
     }
 
     return ret;
