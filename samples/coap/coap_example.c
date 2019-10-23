@@ -122,7 +122,7 @@ static int coap_example_main(int argc, char **argv)
 
     IOT_SetLogLevel(IOT_LOG_DEBUG);
 
-#if !defined(_WIN32) && !defined(BUILD_AOS)
+#if 0
     while ((opt = getopt(argc, argv, "e:s:lhr")) != -1) {
         switch (opt) {
             case 's': {
