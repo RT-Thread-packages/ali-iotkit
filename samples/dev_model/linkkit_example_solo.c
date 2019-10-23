@@ -139,7 +139,7 @@ static int user_service_request_event_handler(const int devid, const char *servi
 
     /* Parse Root */
     root = cJSON_Parse(request);
-    if (root == NULL || !cJSON_IsObject(root)) {
+    if (root == NULL) {
         EXAMPLE_TRACE("JSON Parse Error");
         return -1;
     }
@@ -147,7 +147,7 @@ static int user_service_request_event_handler(const int devid, const char *servi
     if (strlen("Operation_Service") == serviceid_len && memcmp("Operation_Service", serviceid, serviceid_len) == 0) {
         /* Parse NumberA */
         item_number_a = cJSON_GetObjectItem(root, "NumberA");
-        if (item_number_a == NULL || !cJSON_IsNumber(item_number_a)) {
+        if (item_number_a == NULL) {
             cJSON_Delete(root);
             return -1;
         }
@@ -155,7 +155,7 @@ static int user_service_request_event_handler(const int devid, const char *servi
 
         /* Parse NumberB */
         item_number_b = cJSON_GetObjectItem(root, "NumberB");
-        if (item_number_b == NULL || !cJSON_IsNumber(item_number_b)) {
+        if (item_number_b == NULL) {
             cJSON_Delete(root);
             return -1;
         }
