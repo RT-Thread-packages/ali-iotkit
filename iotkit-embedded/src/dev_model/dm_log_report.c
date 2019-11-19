@@ -18,7 +18,7 @@ const char THING_LOG_POST_PARAMS_END[] =
 char *g_log_poll = NULL;
 static char *current_log_pos = NULL;
 
-int remove_log_poll()
+int remove_log_poll(void)
 {
     if (NULL != g_log_poll) {
         HAL_Free(g_log_poll);
@@ -40,21 +40,21 @@ unsigned int push_log(const char *input_log, int input_log_size)
     return (current_log_pos - g_log_poll);
 }
 
-unsigned int add_tail()
+unsigned int add_tail(void)
 {
     const char *tail = "]}";
     current_log_pos -= 1;
     return push_log(tail, strlen(tail));
 }
 
-void add_log_header()
+void add_log_header(void)
 {
     const char *subprefix = "{\"template\": \"traceContext logContent\",\"contents\":[";
     int sublen = strlen(subprefix);
     push_log(subprefix, sublen);
 }
 
-int reset_log_poll()
+int reset_log_poll(void)
 {
     if (NULL == g_log_poll) {
         dm_log_err("log buffer is NULL");
@@ -66,7 +66,7 @@ int reset_log_poll()
     return 0;
 }
 
-int create_log_poll()
+int create_log_poll(void)
 {
     int ret;
     remove_log_poll();
@@ -124,7 +124,7 @@ void parse_msg_id(_IN_ char *payload, _IN_ int payload_len, _OU_ dm_msg_request_
     dm_utils_json_object_item(&lite, DM_MSG_KEY_ID, strlen(DM_MSG_KEY_ID), cJSON_String, &request->id);
 }
 
-int stop_sample()
+int stop_sample(void)
 {
     if (current_log_pos > g_log_poll) {
         dm_mgr_upstream_thing_log_post(0, NULL, 0, 1);

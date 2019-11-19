@@ -214,7 +214,7 @@ int32_t IOT_Sign_MQTT(iotx_mqtt_region_types_t region, iotx_dev_meta_info_t *met
             strlen(g_infra_mqtt_domain[region]));
     }
     rt_strlwr(signout->hostname);
-    rt_kprintf("host name:%s\r\n", signout->hostname);
+    HAL_Printf("host name:%s\r\n", signout->hostname);
 
     /* setup username */
     length = strlen(meta->device_name) + strlen(meta->product_key) + 2;
