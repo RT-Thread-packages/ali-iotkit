@@ -134,16 +134,18 @@ static int ota_callback(void *pcontext, const char *msg, uint32_t msg_len, iotx_
 
             h_ota->type = IOT_OTAT_FOTA;
             h_ota->state = IOT_OTAS_FETCHING;
-// TODO:modify by spunky
-			if (NULL != h_ota->md5) {
-                otalib_MD5Deinit(h_ota->md5);
-	        }
-	        h_ota->md5 = otalib_MD5Init();
 
-	        if (NULL != h_ota->sha256) {
-                otalib_Sha256Deinit(h_ota->sha256);
-	        }
-	        h_ota->sha256 = otalib_Sha256Init();				
+			if (NULL != h_ota->md5) 
+			{
+				otalib_MD5Deinit(h_ota->md5);
+			}
+			h_ota->md5 = otalib_MD5Init();
+
+			if (NULL != h_ota->sha256) 
+			{
+				otalib_Sha256Deinit(h_ota->sha256);
+			}
+			h_ota->sha256 = otalib_Sha256Init();				
 
             if (h_ota->fetch_cb) {
                 h_ota->fetch_cb(h_ota->user_data, 0, h_ota->size_file, h_ota->purl, h_ota->version);
