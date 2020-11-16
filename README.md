@@ -1,105 +1,107 @@
 # Ali IoTKit
 
-> 说明：  
-Ali IoTKit 软件包已经同步更新到 c-sdk-v3.0.1-269691d1b45b15fb9045a8eb178efa54b262aca1c-sdk.git 版本。本软件包中的文档教程未能及时更新，深表歉意，最新文档请移步阿里 [官方 Wikis](https://code.aliyun.com/edward.yangx/public-docs/wikis/user-guide/Linkkit_User_Manual) 和阿里 [官方文档](https://help.aliyun.com/product/93051.html?spm=a2c4g.11186623.6.540.393e492bC6TzC4)。
+[中文页](README_ZH.md) | English
 
-## 1. 介绍
+> Description:
+The Ali IoTKit software package has been updated to c-sdk-v3.0.1-269691d1b45b15fb9045a8eb178efa54b262aca1c-sdk.git. The documentation and tutorials in this package have not been updated in time, we apologize, please move to Ali [Official Wikis](https://code.aliyun.com/edward.yangx/public-docs/wikis/user-guide) /Linkkit_User_Manual) and Ali [Official Document](https://help.aliyun.com/product/93051.html?spm=a2c4g.11186623.6.540.393e492bC6TzC4).
 
-**ali-iotkit** 是 RT-Thread 移植的用于连接阿里云 IoT 平台的软件包。基础 SDK 是阿里提供的 [**iotkit-embedded C-SDK**](https://github.com/aliyun/iotkit-embedded)。
+## 1. Introduction
 
-**ali-iotkit** 为了方便设备上云封装了丰富的连接协议，如 MQTT、CoAP、HTTP、TLS，并且对硬件平台进行了抽象，使其不受具体的硬件平台限制而更加灵活。
+**ali-iotkit** is a software package ported by RT-Thread to connect to the Alibaba Cloud IoT platform. The basic SDK is [**iotkit-embedded C-SDK**](https://github.com/aliyun/iotkit-embedded) provided by Ali.
 
-相对传统的云端接入 SDK，**ali-iotkit** 具有如下优势：
+**ali-iotkit** In order to facilitate the cloud on the device, a rich connection protocol is encapsulated, such as MQTT, CoAP, HTTP, TLS, and the hardware platform is abstracted to make it more flexible without being restricted by the specific hardware platform.
 
-- 快速接入能力
-- 嵌入式设备调优
-- 多编译器支持（Gcc、IAR、MDK）
-- 多连接协议支持（HTTP、MQTT、CoAP）
-- 跨硬件、跨 OS 平台支持
-- 设备固件 OTA 升级
-- TLS/DTLS 安全连接
-- 高可移植的应用端程序
-- 高可复用的功能组件
+Compared with traditional cloud access SDK, **ali-iotkit** has the following advantages:
 
-### 1.1 目录结构
+- Quick access capability
+- Embedded device tuning
+- Multiple compiler support (Gcc, IAR, MDK)
+- Multi-connection protocol support (HTTP, MQTT, CoAP)
+- Cross-hardware, cross-OS platform support
+- Device firmware OTA upgrade
+- TLS/DTLS secure connection
+- Highly portable application program
+- Highly reusable functional components
 
-| 名称            | 说明 |
-| ----            | ---- |
-| docs            | 文档目录 |
-| iotkit-embedded | 阿里 iotkit 原文件目录 |
-| ports            | 移植文件目录 |
-| samples         | 示例文件目录 |
+### 1.1 Directory structure
 
-### 1.2 资源占用
+| Name | Description |
+| ---- | ---- |
+| docs | Document directory |
+| iotkit-embedded | Ali iotkit original file directory |
+| ports | Migration file directory |
+| samples | Sample file directory |
 
-在统计 iotkit 软件包的资源占用的时候，使用的是 MQTT + TLS 例程，仅统计了软件包本身占用的 RAM 和 ROM 大小，未统计 LibC 及外部依赖的文件所占用的资源大小（如 TLS），以及未统计 sample 例程本身占用的资源大小。
+### 1.2 Resource occupation
 
-- 测试平台： iMXRT1052
-- 测试 IDE： MDK5
-- 优化级别： o2
+When counting the resource occupancy of the iotkit software package, the MQTT + TLS routines are used, and only the RAM and ROM size occupied by the package itself are counted. The resource size occupied by LibC and external dependent files (such as TLS) is not counted. , And the resource size occupied by the sample routine itself is not counted.
 
-资源占用如下所示：
+- Test platform: iMXRT1052
+- Test IDE: MDK5
+- Optimization level: o2
+
+The resource usage is as follows:
 
 ```
-RO(CODE + RO)                   : 32886 bytes（32.11K）
-RW(RW + ZI)                     :  2421 bytes（ 2.36K）
-ROM(CODE + RO + RW)             : 32962 bytes（32.18K）
-测试运行 mqtt+tls 例程动态内存使用: 47502 bytes（45.94K）
+RO(CODE + RO): 32886 bytes (32.11K)
+RW(RW + ZI): 2421 bytes (2.36K)
+ROM(CODE + RO + RW): 32962 bytes (32.18K)
+Test run mqtt+tls routine dynamic memory usage: 47502 bytes (45.94K)
 ```
 
 
-### 1.3 许可证
+### 1.3 License
 
-`ali-iotkit` 软件包延用阿里 `iotkit-embedded` 软件包许可协议，请见 `iotkit-embedded/LICENSE` 文件。
+The `ali-iotkit` software package extends the Ali `iotkit-embedded` software package license agreement, please refer to the `iotkit-embedded/LICENSE` file.
 
-### 1.4 依赖
+### 1.4 Dependency
 
 - [RT_Thread 3.0+](https://github.com/RT-Thread/rt-thread/releases/tag/v3.0.4)
-- [MbedTLS 软件包](https://github.com/RT-Thread-packages/mbedtls)
+- [MbedTLS package](https://github.com/RT-Thread-packages/mbedtls)
 
-## 2. 如何使用
+## 2. How to use
 
-### 2.1 启用软件包
+### 2.1 Enable package
 
-- 使用 `menuconfig` 使能 iotkit 软件包并填写设备信息
+- Use `menuconfig` to enable iotkit package and fill in device information
 
 ```c
-RT-Thread online packages  --->
-    IoT - internet of things  --->
-        IoT Cloud  --->
-          [*] Ali-iotkit:  Ali Cloud SDK for IoT platform  --->
-                Select Aliyun platform (LinkDevelop Platform)  --->
+RT-Thread online packages --->
+    IoT-internet of things --->
+        IoT Cloud --->
+          [*] Ali-iotkit: Ali Cloud SDK for IoT platform --->
+                Select Aliyun platform (LinkDevelop Platform) --->
           (a1dSQSGZ77X) Config Product Key
           (RGB-LED-DEV-1) Config Device Name
           (Ghuiyd9nmGowdZzjPqFtxhm3WUHEbIlI) Config Device Secret
-          -*-   Enable MQTT
-          [*]     Enable MQTT sample
-          [*]     Enable MQTT direct connect
-          [*]     Enable SSL
-          [ ]   Enable COAP
-          [*]   Enable OTA
-                      Select OTA channel (Use MQTT OTA channel)  --->
-                    version (latest)  --->
+          -*- Enable MQTT
+          [*] Enable MQTT sample
+          [*] Enable MQTT direct connect
+          [*] Enable SSL
+          [] Enable COAP
+          [*] Enable OTA
+                      Select OTA channel (Use MQTT OTA channel) --->
+                    version (latest) --->
 ```
 
-- 增加 `mbedTLS` 帧大小（OTA 的时候**至少需要 8K 大小**）
+- Increase the frame size of `mbedTLS` (At least 8K size is required for OTA)
 
 ```c
-RT-Thread online packages  --->
-    security packages  --->
-      -*- mbedtls:An open source, portable, easy to use, readable and flexible SSL library  --->
+RT-Thread online packages --->
+    security packages --->
+      -*- mbedtls:An open source, portable, easy to use, readable and flexible SSL library --->
       (8192) Maxium fragment length in bytes
 ```
 
-- 使用 `pkgs --update` 命令下载软件包
+- Use the `pkgs --update` command to download the package
 
-### 2.2 执行示例
+### 2.2 Implementation example
 
-> 在 MSH 中使用命令执行预置的示例程序
+> Use commands to execute preset sample programs in MSH
 
-- MQTT Sample 单次发布订阅
+- MQTT Sample single release subscription
 
-该示例程序演示了如何使用 MQTT 发布、订阅 Topic，MSH 命令如下所示：
+This sample program demonstrates how to use MQTT to publish and subscribe Topic. The MSH commands are as follows:
 
 ```c
 msh />ali_mqtt_test
@@ -113,9 +115,9 @@ ali_mqtt_test|502 :: iotkit-embedded sdk version: V2.10
 mqtt_client|324 :: out of sample!
 ```
 
-- MQTT Sample 监听订阅消息
+- MQTT Sample monitors subscription messages
 
-该示例程序演示了如何使用 MQTT 发布、订阅 Topic，并一直监听订阅 Topic 的消息，MSH 命令如下所示：
+This sample program demonstrates how to use MQTT to publish and subscribe to Topic, and always monitor the news of subscribing to Topic. The MSH command is as follows:
 
 ```c
 msh />ali_mqtt_test loop
@@ -134,7 +136,7 @@ event_handle|111 :: subscribe success, packet-id=0
 
 - OTA Sample
 
-该示例程序演示了如何使用阿里云 OTA 服务，使用 `ali_ota_test` 命令启动例程，这个时候，设备首先会上报当前版本号到阿里云，然后等待云端下发 OTA 升级命令。
+This sample program demonstrates how to use the Alibaba Cloud OTA service, using the `ali_ota_test` command to start the routine. At this time, the device will first report the current version number to Alibaba Cloud, and then wait for the cloud to issue an OTA upgrade command.
 
 ```c
 msh />ali_ota_test
@@ -145,34 +147,34 @@ ali_ota_main|325 :: iotkit-embedded sdk version: V2.10
 
 ...
 
-mqtt_client|232 :: wait ota upgrade command....
+mqtt_client|232 :: wait ota upgrade command...
 [dbg] iotx_mc_cycle(1260): PUBACK
 event_handle|117 :: publish success, packet-id=2
 [dbg] iotx_mc_cycle(1269): SUBACK
 event_handle|093 :: subscribe success, packet-id=1
-mqtt_client|232 :: wait ota upgrade command....
-mqtt_client|232 :: wait ota upgrade command....
-mqtt_client|232 :: wait ota upgrade command....
+mqtt_client|232 :: wait ota upgrade command...
+mqtt_client|232 :: wait ota upgrade command...
+mqtt_client|232 :: wait ota upgrade command...
 ```
 
-## 3、 参考
+## 3. Reference
 
-- 上手使用，请参考[用户指南](docs/user-guide.md)
-- 详细的示例介绍，请参考[示例文档](docs/samples.md)
-- API 介绍，请参考[API 说明文档](docs/api.md)
-- 更多详细文档，请访问 `/docs` 目录查看
+- To get started, please refer to [User Guide](docs/user-guide.md)
+- For detailed sample introduction, please refer to [Sample Document](docs/samples.md)
+- API introduction, please refer to [API documentation](docs/api.md)
+- For more detailed documents, please visit the `/docs` directory to view
 
-## 4、 注意事项
+## 4. Matters needing attention
 
-- 使用前请在 `menuconfig` 里配置自己的设备信息（PRODUCT_KEY、DEVICE_NAME 和 DEVICE_SECRET）
-- 开启 OTA 功能必须使能加密连接（因为 OTA 升级必须使用 HTTPS 下载固件）
+- Please configure your device information (PRODUCT_KEY, DEVICE_NAME and DEVICE_SECRET) in `menuconfig` before use
+- Encrypted connection must be enabled to enable OTA function (because OTA upgrade must use HTTPS to download firmware)
 
-## 5、 常见问题
+## 5. Common problems
 
-- MbedTLS 返回 0x7200 错误  
-  通常是由于 MbedTLS 帧长度过小，请增加 MbedTLS 帧长度，参考第二章节。
+- MbedTLS returns 0x7200 error
+  Usually the MbedTLS frame length is too small, please increase the MbedTLS frame length, refer to Chapter 2.
 
-## 6、 联系方式 & 感谢
+## 6. Contact & Thanks
 
-- 维护： Murphy
-- 主页： https://github.com/RT-Thread-packages/ali-iotkit
+- Maintenance: Murphy
+- Homepage: https://github.com/RT-Thread-packages/ali-iotkit
