@@ -115,9 +115,9 @@ typedef enum {
     RUNNING,
     DONE
 } REPORT_STATE;
-unsigned int add_tail();
-int reset_log_poll();
-int remove_log_poll();
+unsigned int add_tail(void);
+int reset_log_poll(void);
+int remove_log_poll(void);
 unsigned int push_log(const char *perform_data, int perform_data_size);
 #endif
 
