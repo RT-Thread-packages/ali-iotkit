@@ -28,6 +28,7 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/errno.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <netinet/tcp.h>
