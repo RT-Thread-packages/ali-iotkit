@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
+#include <errno.h>
 
 #define DBG_TAG                        "ali.tcp"
 #define DBG_LVL                        DBG_INFO
