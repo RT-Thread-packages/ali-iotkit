@@ -83,7 +83,7 @@ static void _mem_swap_module_pos(list_head_t *a, list_head_t *b)
 {
     list_head_t temp = {NULL, NULL};
 
-    if (a == NULL) {
+    if (a == NULL || b == NULL) {
         return;
     }
 
