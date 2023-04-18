@@ -603,7 +603,7 @@ static int _TLSConnectNetwork(TLSDataParams_t *pTlsData, const char *addr, const
                 HAL_Free(save_buf);
                 break;
             }
-            memset(save_buf, 0x00, sizeof(TLS_MAX_SESSION_BUF));
+            memset(save_buf, 0x00, TLS_MAX_SESSION_BUF * sizeof(int));
             memset(saved_session, 0x00, sizeof(mbedtls_ssl_session));
 
             ret = mbedtls_ssl_get_session(&(pTlsData->ssl), saved_session);
