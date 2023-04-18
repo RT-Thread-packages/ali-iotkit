@@ -67,13 +67,13 @@ typedef struct {
 
 /* sort module used */
 static int _mem_cmp_max_used(list_head_t *a, list_head_t *b)
-{
-    module_mem_t *temp_a = list_entry(a, module_mem_t, list);
-    module_mem_t *temp_b = list_entry(b, module_mem_t, list);
-
+{   
     if (a == NULL || b == NULL) {
         return 0;
     }
+    
+    module_mem_t *temp_a = list_entry(a, module_mem_t, list);
+    module_mem_t *temp_b = list_entry(b, module_mem_t, list);
 
     /* return true to swap if a < b */
     return (temp_a->mem_statis.bytes_max_in_use < temp_b->mem_statis.bytes_max_in_use);
@@ -83,7 +83,7 @@ static void _mem_swap_module_pos(list_head_t *a, list_head_t *b)
 {
     list_head_t temp = {NULL, NULL};
 
-    if (a == NULL || a == NULL) {
+    if (a == NULL) {
         return;
     }
 
